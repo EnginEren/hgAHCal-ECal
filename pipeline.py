@@ -33,7 +33,7 @@ def sim(v):
                     image='ilcsoft/ilcsoft-spack:latest',
                     command=[ '/bin/bash', '-c'],
                     arguments=['git clone https://github.com/EnginEren/hgAHCal-ECal.git  && \
-                                cd $PWD/hgAHCal-ECal/kf_pipelines/ && chmod +x ./runSim.sh && ./runSim.sh && \
+                                cd $PWD/hgAHCal-ECal && chmod +x ./runSim.sh && ./runSim.sh && \
                                 ls -ltrh /mnt'],
                     pvolumes={"/mnt": v.volume},
                     file_outputs={'lcio': '/mnt/lcio_path',
@@ -44,10 +44,10 @@ def sim(v):
 def rec(v, simout_name):
     return dsl.ContainerOp(
                     name='Reconstruction',
-                    image='ilcsoft/ilcsoft-centos7-gcc8.2:v02-01-pre',
+                    image='ilcsoft/ilcsoft-spack:latest',
                     command=[ '/bin/bash', '-c'],
-                    arguments=['git clone --branch postpaper https://github.com/FLC-QU-hep/neurIPS2021_hadron.git && \
-                                cd $PWD/neurIPS2021_hadron/training_data/kf_pipelines/ && \
+                    arguments=['git clone https://github.com/EnginEren/hgAHCal-ECal.git && \
+                                cd $PWD/hgAHCal-ECal && \
                                 chmod +x ./runRec.sh && ./runRec.sh "$0"', simout_name ],
                     pvolumes={"/mnt": v.volume}
     )   
@@ -82,7 +82,7 @@ def sequential_pipeline():
     
     r = create_vol()
     simulation = sim(r)
-    
+    recost = rec(r, simulation.outputs['lcio']) 
    
 
    

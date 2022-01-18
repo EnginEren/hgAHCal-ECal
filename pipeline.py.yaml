@@ -1,0 +1,75 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: ildeventgen-
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-01-18T11:03:47.477613',
+    pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
+      "name": "ILDEventGen"}'}
+  labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
+spec:
+  entrypoint: ildeventgen
+  templates:
+  - name: ildeventgen
+    dag:
+      tasks:
+      - {name: persistent-volume, template: persistent-volume}
+      - name: simulation
+        template: simulation
+        dependencies: [persistent-volume]
+        arguments:
+          parameters:
+          - {name: persistent-volume-name, value: '{{tasks.persistent-volume.outputs.parameters.persistent-volume-name}}'}
+  - name: persistent-volume
+    resource:
+      action: create
+      manifest: |
+        apiVersion: v1
+        kind: PersistentVolumeClaim
+        metadata:
+          name: '{{workflow.name}}-my-pvc'
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 15Gi
+    outputs:
+      parameters:
+      - name: persistent-volume-manifest
+        valueFrom: {jsonPath: '{}'}
+      - name: persistent-volume-name
+        valueFrom: {jsonPath: '{.metadata.name}'}
+      - name: persistent-volume-size
+        valueFrom: {jsonPath: '{.status.capacity.storage}'}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+  - name: simulation
+    container:
+      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git  &&                                 cd
+          $PWD/hgAHCal-ECal && ls -ltrh && chmod +x ./runSim.sh && ./runSim.sh &&                                 ls
+          -ltrh /mnt']
+      command: [/bin/bash, -c]
+      image: ilcsoft/ilcsoft-spack:latest
+      volumeMounts:
+      - {mountPath: /mnt, name: persistent-volume}
+    inputs:
+      parameters:
+      - {name: persistent-volume-name}
+    outputs:
+      artifacts:
+      - {name: simulation-lcio, path: /mnt/lcio_path}
+      - {name: simulation-root, path: /mnt/root_path}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - name: persistent-volume
+      persistentVolumeClaim: {claimName: '{{inputs.parameters.persistent-volume-name}}'}
+  arguments:
+    parameters: []
+  serviceAccountName: pipeline-runner

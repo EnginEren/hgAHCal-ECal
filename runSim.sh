@@ -4,10 +4,10 @@ source /home/init_ilcsoft.sh
 source /spack/share/spack/setup-env.sh
 
 export SIM_MODEL=ILD_l5_v02
-export MAIN=$PWD
+export MAIN=$(echo $PWD)
 
 git clone --branch v02-02 https://github.com/iLCSoft/ILDConfig.git
-cp ILDConfig/StandardConfig/production
+cd ILDConfig/StandardConfig/production
 git clone https://github.com/iLCSoft/lcgeo.git
 
 cp $MAIN/geo/*.xml ./lcgeo/ILD/ILD_common_v02
