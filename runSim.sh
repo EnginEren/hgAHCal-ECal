@@ -15,7 +15,8 @@ cp $MAIN/pionGun.mac .
 cp $MAIN/ddsim_steer_macro.py .
 cp $MAIN/create_root_tree.xml .
 
-n=$(echo $RANDOM)
+n=$1
+r=$2
 
 echo "-- Running DDSim..."
 ddsim --outputFile ./pion-shower_$n.slcio --compactFile ./lcgeo/ILD/compact/${SIM_MODEL}/${SIM_MODEL}.xml --steeringFile ddsim_steer_macro.py 
@@ -23,7 +24,7 @@ ddsim --outputFile ./pion-shower_$n.slcio --compactFile ./lcgeo/ILD/compact/${SI
 echo "Converting: LCIO --> root file"
 Marlin create_root_tree.xml --global.LCIOInputFiles=./pion-shower_$n.slcio --MyAIDAProcessor.FileName=pion-shower_$n;
 
-mkdir /mnt/run_$n && mv ./pion-shower_$n.slcio /mnt/run_$n && mv ./pion-shower_$n.root /mnt/run_$n
+mkdir /mnt/run_$r && mv ./pion-shower_$n.slcio /mnt/run_$r && mv ./pion-shower_$n.root /mnt/run_$r
 
-echo /mnt/run_$n/pion-shower_$n.slcio > /mnt/lcio_path
-echo /mnt/run_$n/pion-shower_$n.root > /mnt/root_path
+echo /mnt/run_$r/pion-shower_$n.slcio > /mnt/lcio_path
+echo /mnt/run_$r/pion-shower_$n.root > /mnt/root_path

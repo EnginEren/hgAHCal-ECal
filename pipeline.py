@@ -27,16 +27,16 @@ def create_vol():
         size="15Gi"
     )
 
-def sim(v):
+def sim(v, pname, rname):
     return dsl.ContainerOp(
                     name='Simulation',
                     image='ilcsoft/ilcsoft-spack:latest',
                     command=[ '/bin/bash', '-c'],
                     arguments=['git clone https://github.com/EnginEren/hgAHCal-ECal.git  && \
-                                cd $PWD/hgAHCal-ECal && chmod +x ./runSim.sh && ./runSim.sh'],
+                                cd $PWD/hgAHCal-ECal && chmod +x ./runSim.sh && ./runSim.sh "$0" "$1" ', pname, rname],
                     pvolumes={"/mnt": v.volume},
-                    file_outputs={'lcio': '/mnt/lcio_path',
-                                   'root': '/mnt/root_path'
+                    file_outputs={'lcio_path': '/mnt/lcio_path',
+                                   'data': '/mnt/run_'+ rname + 'pion_shower_' + pname + '.slcio',
                     },
     )    
 
@@ -46,11 +46,22 @@ def rec(v, simout_name):
                     image='ilcsoft/ilcsoft-spack:latest',
                     command=[ '/bin/bash', '-c'],
                     arguments=['git clone https://github.com/EnginEren/hgAHCal-ECal.git && \
-                                cd $PWD/hgAHCal-ECal && \
+                                cd $PWD/hgAHCal-ECal && pwd && \
                                 chmod +x ./runRec.sh && ./runRec.sh "$0"', simout_name ],
                     pvolumes={"/mnt": v.volume}
     )   
 
+
+def evaluate(v, simout_name):
+    return dsl.ContainerOp(
+                    name='Control_Plots',
+                    image='ilcsoft/ilcsoft-spack:latest',
+                    command=[ '/bin/bash', '-c'],
+                    arguments=['git clone https://github.com/EnginEren/hgAHCal-ECal.git && \
+                                cd $PWD/hgAHCal-ECal && pwd && \
+                                ', simout_name ],
+                    pvolumes={"/mnt": v.volume}
+    )   
 
 def convert_hdf5(v, simout_root, file_name):
     return dsl.ContainerOp(
@@ -81,7 +92,7 @@ def sequential_pipeline():
     
     r = create_vol()
     simulation = sim(r)
-    recost = rec(r, simulation.outputs['lcio']) 
+    
    
 
    
