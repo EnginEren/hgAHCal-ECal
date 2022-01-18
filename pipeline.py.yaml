@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: ildeventgen-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-01-18T13:30:25.640063',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-01-18T13:52:27.901671',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
       "name": "ILDEventGen"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
@@ -56,8 +56,8 @@ spec:
   - name: reconstruction
     container:
       args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git &&                                 cd
-          $PWD/hgAHCal-ECal &&  ls -ltrh &&                                chmod +x
-          ./runRec.sh && ./runRec.sh "$0"', '{{inputs.parameters.simulation-lcio}}']
+          $PWD/hgAHCal-ECal &&                                 chmod +x ./runRec.sh
+          && ./runRec.sh "$0"', '{{inputs.parameters.simulation-lcio}}']
       command: [/bin/bash, -c]
       image: ilcsoft/ilcsoft-spack:latest
       volumeMounts:
