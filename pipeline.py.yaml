@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: ildeventgen-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-01-18T11:03:47.477613',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-01-18T11:32:35.765524',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
       "name": "ILDEventGen"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
@@ -13,6 +13,13 @@ spec:
     dag:
       tasks:
       - {name: persistent-volume, template: persistent-volume}
+      - name: reconstruction
+        template: reconstruction
+        dependencies: [persistent-volume, simulation]
+        arguments:
+          parameters:
+          - {name: persistent-volume-name, value: '{{tasks.persistent-volume.outputs.parameters.persistent-volume-name}}'}
+          - {name: simulation-lcio, value: '{{tasks.simulation.outputs.parameters.simulation-lcio}}'}
       - name: simulation
         template: simulation
         dependencies: [persistent-volume]
@@ -46,10 +53,31 @@ spec:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
         pipelines.kubeflow.org/pipeline-sdk-type: kfp
         pipelines.kubeflow.org/enable_caching: "true"
+  - name: reconstruction
+    container:
+      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git &&                                 cd
+          $PWD/hgAHCal-ECal &&                                 chmod +x ./runRec.sh
+          && ./runRec.sh "$0"', '{{inputs.parameters.simulation-lcio}}']
+      command: [/bin/bash, -c]
+      image: ilcsoft/ilcsoft-spack:latest
+      volumeMounts:
+      - {mountPath: /mnt, name: persistent-volume}
+    inputs:
+      parameters:
+      - {name: persistent-volume-name}
+      - {name: simulation-lcio}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - name: persistent-volume
+      persistentVolumeClaim: {claimName: '{{inputs.parameters.persistent-volume-name}}'}
   - name: simulation
     container:
       args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git  &&                                 cd
-          $PWD/hgAHCal-ECal && ls -ltrh && chmod +x ./runSim.sh && ./runSim.sh &&                                 ls
+          $PWD/hgAHCal-ECal && chmod +x ./runSim.sh && ./runSim.sh &&                                 ls
           -ltrh /mnt']
       command: [/bin/bash, -c]
       image: ilcsoft/ilcsoft-spack:latest
@@ -59,6 +87,9 @@ spec:
       parameters:
       - {name: persistent-volume-name}
     outputs:
+      parameters:
+      - name: simulation-lcio
+        valueFrom: {path: /mnt/lcio_path}
       artifacts:
       - {name: simulation-lcio, path: /mnt/lcio_path}
       - {name: simulation-root, path: /mnt/root_path}
