@@ -10,7 +10,7 @@ git clone --branch v02-02 https://github.com/iLCSoft/ILDConfig.git
 cd ILDConfig/StandardConfig/production
 git clone https://github.com/iLCSoft/lcgeo.git
 
-cp $MAIN/geo/*.xml ./lcgeo/ILD/ILD_common_v02/
+cp $MAIN/geo/*.xml ./lcgeo/ILD/compact/ILD_common_v02/
 cp $MAIN/pionGun.mac . 
 cp $MAIN/ddsim_steer_macro.py .
 
