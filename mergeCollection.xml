@@ -1,0 +1,39 @@
+<marlin>
+
+<execute>
+  <processor name="MergeCollectionsEcalBarrelHits"/>
+  <processor name="MyLCIOOutputProcessor"/>
+</execute>
+
+
+<constants>
+	<constant name="outputFile" value="test.slcio" />
+</constants>
+
+<processor name="MyLCIOOutputProcessor" type="LCIOOutputProcessor">
+    <!--   standard output: full reconstruction keep all collections -->
+    <parameter name="LCIOOutputFile" type="string" >
+      ${outputFile}
+    </parameter>
+    <parameter name="LCIOWriteMode" type="string" value="WRITE_NEW"/>
+    <parameter name="DropCollectionNames" type="StringVec"> 
+    </parameter>
+    <parameter name="CompressionLevel" type="int" value="6"/>
+    <!--parameter name="SplitFileSizekB" type="int" value="1992294"/-->
+  </processor>
+
+<processor name="MergeCollectionsEcalBarrelHits" type="MergeCollections">
+    <parameter name="InputCollections" type="StringVec"> ECalBarrelSiHitsEven ECalBarrelSiHitsOdd </parameter>
+    <parameter name="OutputCollection" type="string"> EcalBarrelCollection </parameter>
+</processor>
+
+<global>
+    <parameter name="LCIOInputFiles"> some.slcio </parameter>
+    <parameter name="MaxRecordNumber" value="0"/>
+    <parameter name="SkipNEvents" value="0"/>
+    <parameter name="SupressCheck" value="false"/>
+    <parameter name="Verbosity"> MESSAGE </parameter>
+    <parameter name="RandomSeed" value="1234567890" />
+</global>
+
+</marlin>
