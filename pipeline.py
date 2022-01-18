@@ -36,7 +36,7 @@ def sim(v, pname, rname):
                                 cd $PWD/hgAHCal-ECal && chmod +x ./runSim.sh && ./runSim.sh "$0" "$1" ', pname, rname],
                     pvolumes={"/mnt": v.volume},
                     file_outputs={'lcio_path': '/mnt/lcio_path',
-                                   'data': '/mnt/run_'+ rname + 'pion_shower_' + pname + '.slcio',
+                                   'data': '/mnt/run_'+ rname + '/pion_shower_' + pname + '.slcio',
                     },
     )    
 
@@ -91,7 +91,7 @@ def sequential_pipeline():
     """A pipeline with sequential steps."""
     
     r = create_vol()
-    simulation = sim(r)
+    simulation = sim(r, '1', 'test_001')
     
    
 

@@ -24,7 +24,11 @@ ddsim --outputFile ./pion-shower_$n.slcio --compactFile ./lcgeo/ILD/compact/${SI
 echo "Converting: LCIO --> root file"
 Marlin create_root_tree.xml --global.LCIOInputFiles=./pion-shower_$n.slcio --MyAIDAProcessor.FileName=pion-shower_$n;
 
-mkdir /mnt/run_$r && mv ./pion-shower_$n.slcio /mnt/run_$r && mv ./pion-shower_$n.root /mnt/run_$r
+mkdir -p /mnt/run_$r 
+mv ./pion-shower_$n.slcio /mnt/run_$r 
+mv ./pion-shower_$n.root /mnt/run_$r
+
+ls -ltrh /mnt/run_$r 
 
 echo /mnt/run_$r/pion-shower_$n.slcio > /mnt/lcio_path
 echo /mnt/run_$r/pion-shower_$n.root > /mnt/root_path
