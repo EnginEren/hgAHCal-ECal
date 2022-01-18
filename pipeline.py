@@ -47,7 +47,7 @@ def rec(v, simout_name):
                     image='ilcsoft/ilcsoft-spack:latest',
                     command=[ '/bin/bash', '-c'],
                     arguments=['git clone https://github.com/EnginEren/hgAHCal-ECal.git && \
-                                cd $PWD/hgAHCal-ECal && \
+                                cd $PWD/hgAHCal-ECal &&  ls -ltrh &&\
                                 chmod +x ./runRec.sh && ./runRec.sh "$0"', simout_name ],
                     pvolumes={"/mnt": v.volume}
     )   

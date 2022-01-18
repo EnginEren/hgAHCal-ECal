@@ -13,7 +13,7 @@ git clone https://github.com/iLCSoft/lcgeo.git
 cp $MAIN/geo/*.xml ./lcgeo/ILD/compact/ILD_common_v02/
 cp $MAIN/pionGun.mac . 
 cp $MAIN/ddsim_steer_macro.py .
-cp $MAIN/create_root_tree .
+cp $MAIN/create_root_tree.xml .
 
 n=$(echo $RANDOM)
 
