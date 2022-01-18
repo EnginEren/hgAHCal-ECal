@@ -33,8 +33,7 @@ def sim(v):
                     image='ilcsoft/ilcsoft-spack:latest',
                     command=[ '/bin/bash', '-c'],
                     arguments=['git clone https://github.com/EnginEren/hgAHCal-ECal.git  && \
-                                cd $PWD/hgAHCal-ECal && chmod +x ./runSim.sh && ./runSim.sh && \
-                                ls -ltrh /mnt'],
+                                cd $PWD/hgAHCal-ECal && chmod +x ./runSim.sh && ./runSim.sh'],
                     pvolumes={"/mnt": v.volume},
                     file_outputs={'lcio': '/mnt/lcio_path',
                                    'root': '/mnt/root_path'
