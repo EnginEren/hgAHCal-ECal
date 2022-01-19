@@ -57,7 +57,8 @@ def evaluate(v, lcio_file):
                     name='Control_Plots',
                     image='ilcsoft/py3lcio:lcio-16',
                     command=[ '/bin/bash', '-c'],
-                    arguments=['cd LCIO; source setup.sh; cd .. && conda activate root_env && mkdir -p /mnt/plots && \
+                    arguments=['cd LCIO; source setup.sh; cd .. && \
+                                conda init bash; source /root/.bashrc; conda activate root_env && mkdir -p /mnt/plots && \
                                 git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal && \
                                 python control.py --lcio_file "$0" --nEvents 20', lcio_file],
                     pvolumes={"/mnt": v.volume}
