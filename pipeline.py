@@ -36,7 +36,7 @@ def sim(v, pname, rname):
                                 cd $PWD/hgAHCal-ECal && chmod +x ./runSim.sh && ./runSim.sh "$0" "$1" ', pname, rname],
                     pvolumes={"/mnt": v.volume},
                     file_outputs={'lcio_path': '/mnt/lcio_path',
-                                   'data': '/mnt/run_'+ rname + '/pion_shower_' + pname + '.slcio',
+                                   'data': '/mnt/run_'+ rname + '/pion-shower_' + pname + '.slcio',
                     },
     )    
 
@@ -52,14 +52,14 @@ def rec(v, simout_name):
     )   
 
 
-def evaluate(v, simout_name):
+def evaluate(v, lcio_file):
     return dsl.ContainerOp(
                     name='Control_Plots',
-                    image='ilcsoft/ilcsoft-spack:latest',
+                    image='ilcsoft/py3lcio:lcio-16',
                     command=[ '/bin/bash', '-c'],
-                    arguments=['git clone https://github.com/EnginEren/hgAHCal-ECal.git && \
-                                cd $PWD/hgAHCal-ECal && pwd && \
-                                ', simout_name ],
+                    arguments=['cd LCIO; source setup.sh; cd .. && conda activate root_env && mkdir -p /mnt/plots && \
+                                git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal && \
+                                python control.py --lcio_file "$0" --nEvents 20', lcio_file],
                     pvolumes={"/mnt": v.volume}
     )   
 
@@ -91,9 +91,9 @@ def sequential_pipeline():
     """A pipeline with sequential steps."""
     
     r = create_vol()
-    simulation = sim(r, '1', 'test_001')
-    
-   
+    simulation = sim(r, '1', 'test_002')
+    inptLCIO = dsl.InputArgumentPath(simulation.outputs['data']) 
+    evaluate(r, inptLCIO)
 
    
     

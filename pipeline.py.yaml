@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: ildeventgen-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-01-18T14:59:20.203033',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-01-18T16:49:38.172401',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
       "name": "ILDEventGen"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
@@ -60,7 +60,7 @@ spec:
       - {name: persistent-volume-name}
     outputs:
       artifacts:
-      - {name: simulation-data, path: /mnt/run_test_001/pion_shower_1.slcio}
+      - {name: simulation-data, path: /mnt/run_test_001/pion-shower_1.slcio}
       - {name: simulation-lcio_path, path: /mnt/lcio_path}
     metadata:
       labels:
