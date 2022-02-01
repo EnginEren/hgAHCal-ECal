@@ -47,7 +47,7 @@ def rec(v, lcio_file, pname, rname):
                     command=[ '/bin/bash', '-c'],
                     arguments=['git clone https://github.com/EnginEren/hgAHCal-ECal.git && \
                                 cd $PWD/hgAHCal-ECal && pwd && \
-                                chmod +x ./runRec.sh && ./runRec.sh "$0" "$1" "$2" ', lcio_file, rname, pname ],
+                                chmod +x ./runRec.sh && ./runRec.sh "$0" "$1" "$2" ', lcio_file, pname, rname ],
                     pvolumes={"/mnt": v.volume},
                     file_outputs={
                             'data': '/mnt/run_'+ rname + '/pion-shower_' + pname + '_REC.slcio'

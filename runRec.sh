@@ -12,17 +12,17 @@ cd ./ILDConfig/StandardConfig/production
 
 
 
-run=$2
+r=$3
 
 
 echo "-- Running Reconstruction--"
 
 Marlin MarlinStdReco.xml --constant.lcgeo_DIR=$lcgeo_DIR \
         --constant.DetectorModel=${REC_MODEL} \
-        --constant.OutputBaseName=pion-shower_$3 \
+        --constant.OutputBaseName=pion-shower_$2 \
         --constant.RunBeamCalReco=false \
         --global.LCIOInputFiles=$1
 
 
-mv pion-shower_$3_REC.slcio /mnt/$run
-ls -ltrh /mnt/$run
+mv pion-shower_$2_REC.slcio /mnt/run_$r
+ls -ltrh /mnt/run_$r
