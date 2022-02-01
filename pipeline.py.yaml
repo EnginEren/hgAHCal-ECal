@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: ildeventgen-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-01-19T11:35:21.822572',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-01-20T11:13:16.440735',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
       "name": "ILDEventGen"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
@@ -15,7 +15,9 @@ spec:
           init bash; source /root/.bashrc; conda activate root_env && mkdir -p /mnt/plots
           &&                                 git clone https://github.com/EnginEren/hgAHCal-ECal.git
           && cd $PWD/hgAHCal-ECal &&                                 python control.py
-          --lcio_file "$0" --nEvents 20', /tmp/inputs/input-0/data]
+          --lcio "$0" --nEvents 20 &&                                 cd /mnt/plots/
+          && touch pion_plots.tar.gz &&                                 tar --exclude=pion_plots.tar.gz
+          -zcvf pion_plots.tar.gz .', /tmp/inputs/input-0/data]
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
       volumeMounts:
@@ -25,6 +27,9 @@ spec:
       - {name: persistent-volume-name}
       artifacts:
       - {name: simulation-data, path: /tmp/inputs/input-0/data}
+    outputs:
+      artifacts:
+      - {name: control-plots-data, path: /mnt/plots/pion_plots.tar.gz}
     metadata:
       labels:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
@@ -45,6 +50,14 @@ spec:
           artifacts:
           - {name: simulation-data, from: '{{tasks.simulation.outputs.artifacts.simulation-data}}'}
       - {name: persistent-volume, template: persistent-volume}
+      - name: reconstruction
+        template: reconstruction
+        dependencies: [persistent-volume, simulation]
+        arguments:
+          parameters:
+          - {name: persistent-volume-name, value: '{{tasks.persistent-volume.outputs.parameters.persistent-volume-name}}'}
+          artifacts:
+          - {name: simulation-data, from: '{{tasks.simulation.outputs.artifacts.simulation-data}}'}
       - name: simulation
         template: simulation
         dependencies: [persistent-volume]
@@ -78,11 +91,33 @@ spec:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
         pipelines.kubeflow.org/pipeline-sdk-type: kfp
         pipelines.kubeflow.org/enable_caching: "true"
+  - name: reconstruction
+    container:
+      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git &&                                 cd
+          $PWD/hgAHCal-ECal && pwd &&                                 chmod +x ./runRec.sh
+          && ./runRec.sh "$0"', /tmp/inputs/input-0/data]
+      command: [/bin/bash, -c]
+      image: ilcsoft/ilcsoft-spack:latest
+      volumeMounts:
+      - {mountPath: /mnt, name: persistent-volume}
+    inputs:
+      parameters:
+      - {name: persistent-volume-name}
+      artifacts:
+      - {name: simulation-data, path: /tmp/inputs/input-0/data}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - name: persistent-volume
+      persistentVolumeClaim: {claimName: '{{inputs.parameters.persistent-volume-name}}'}
   - name: simulation
     container:
       args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git  &&                                 cd
           $PWD/hgAHCal-ECal && chmod +x ./runSim.sh && ./runSim.sh "$0" "$1" ', '1',
-        test_002]
+        test_003]
       command: [/bin/bash, -c]
       image: ilcsoft/ilcsoft-spack:latest
       volumeMounts:
@@ -92,13 +127,14 @@ spec:
       - {name: persistent-volume-name}
     outputs:
       artifacts:
-      - {name: simulation-data, path: /mnt/run_test_002/pion-shower_1.slcio}
+      - {name: simulation-data, path: /mnt/run_test_003/pion-shower_1.slcio}
       - {name: simulation-lcio_path, path: /mnt/lcio_path}
     metadata:
       labels:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
         pipelines.kubeflow.org/pipeline-sdk-type: kfp
         pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/max_cache_staleness: P0D}
     volumes:
     - name: persistent-volume
       persistentVolumeClaim: {claimName: '{{inputs.parameters.persistent-volume-name}}'}

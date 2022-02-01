@@ -33,7 +33,7 @@ def sim(v, pname, rname):
                     image='ilcsoft/ilcsoft-spack:latest',
                     command=[ '/bin/bash', '-c'],
                     arguments=['git clone https://github.com/EnginEren/hgAHCal-ECal.git  && \
-                                cd $PWD/hgAHCal-ECal && chmod +x ./runSim.sh && ./runSim.sh "$0" "$1" ', pname, rname],
+                                cd $PWD/hgAHCal-ECal && chmod +x ./runSimNested.sh && ./runSimNested.sh "$0" "$1" ', pname, rname],
                     pvolumes={"/mnt": v.volume},
                     file_outputs={'lcio_path': '/mnt/lcio_path',
                                    'data': '/mnt/run_'+ rname + '/pion-shower_' + pname + '.slcio',
@@ -90,7 +90,7 @@ def convert_hdf5(v, simout_root, file_name):
 
 
 @dsl.pipeline(
-    name='ILDEventGen',
+    name='ILDEventGen_NestedGAN',
     description='Event Simulation and Reconstruction'
 )
 
@@ -98,11 +98,11 @@ def sequential_pipeline():
     """A pipeline with sequential steps."""
     
     r = create_vol()
-    simulation = sim(r, '1', 'test_003')
+    simulation = sim(r, '1', 'testNested')
     simulation.execution_options.caching_strategy.max_cache_staleness = "P0D"
     inptLCIO = dsl.InputArgumentPath(simulation.outputs['data']) 
     rec(r, inptLCIO)
-    evaluate(r, inptLCIO)
+    #evaluate(r, inptLCIO)
 
    
     
