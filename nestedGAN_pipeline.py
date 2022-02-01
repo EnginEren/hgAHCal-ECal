@@ -40,15 +40,18 @@ def sim(v, pname, rname):
                     },
     )    
 
-def rec(v, lcio_file):
+def rec(v, lcio_file, pname, rname):
     return dsl.ContainerOp(
                     name='Reconstruction',
                     image='ilcsoft/ilcsoft-spack:latest',
                     command=[ '/bin/bash', '-c'],
                     arguments=['git clone https://github.com/EnginEren/hgAHCal-ECal.git && \
                                 cd $PWD/hgAHCal-ECal && pwd && \
-                                chmod +x ./runRec.sh && ./runRec.sh "$0"', lcio_file ],
-                    pvolumes={"/mnt": v.volume}
+                                chmod +x ./runRec.sh && ./runRec.sh "$0" "$1" "$2" ', lcio_file, rname, pname ],
+                    pvolumes={"/mnt": v.volume},
+                    file_outputs={
+                            'data': '/mnt/run_'+ rname + '/pion-shower_' + pname + '_REC.slcio'
+                    },
     )   
 
 
@@ -98,10 +101,10 @@ def sequential_pipeline():
     """A pipeline with sequential steps."""
     
     r = create_vol()
-    simulation = sim(r, '1', 'testNested')
-    #simulation.execution_options.caching_strategy.max_cache_staleness = "P0D"
+    simulation = sim(r, '1', 'testN01')
+    simulation.execution_options.caching_strategy.max_cache_staleness = "P0D"
     inptLCIO = dsl.InputArgumentPath(simulation.outputs['data']) 
-    rec(r, inptLCIO)
+    rec(r, inptLCIO, '1', 'testN01')
     #evaluate(r, inptLCIO)
 
    
