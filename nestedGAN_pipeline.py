@@ -74,23 +74,18 @@ def evaluate(v, lcio_file):
                     
     )   
 
-def convert_hdf5(v, simout_root, file_name):
+def convert_hdf5(v, recFile, pname, rname):
     return dsl.ContainerOp(
                     name='hdf5 conversion',
                     image='engineren/pytorch:latest',
                     command=[ '/bin/bash', '-c'],
-                    arguments=['git clone --branch postpaper https://github.com/FLC-QU-hep/neurIPS2021_hadron.git && \
-                                cd $PWD/neurIPS2021_hadron/training_data/kf_pipelines/ && cp ../create_hdf5.py . && \
-                                python create_hdf5.py --rootfile "$0" --branch pionSIM --batchsize 1 --output pion-shower-"$1" --hcal True && \
-                                RUN=$(echo "$0" | cut -d"/" -f3) && \
-                                cp pion-shower-"$1".hdf5 /mnt/$RUN && cp pion-shower-"$1".hdf5 /tmp', simout_root, file_name],
+                    arguments=['git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal  \
+                                && python create_hdf5.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents 100', recFile, rname, pname],
                     pvolumes={"/mnt": v.volume},
                     file_outputs = {
-                        'data': '/tmp/pion-shower-'+file_name+'.hdf5',
+                        'data': '/mnt/run_'+ rname + '/pion-shower_' + pname + '.hdf5'
                     }
     )   
-
-
 
 
 @dsl.pipeline(
@@ -107,7 +102,10 @@ def sequential_pipeline():
     inptLCIO = dsl.InputArgumentPath(simulation.outputs['data']) 
     reconst = rec(r, inptLCIO, '1', 'testN100')
     inptLCIORec = dsl.InputArgumentPath(reconst.outputs['data'])
+    convert_hdf5(r, inptLCIORec, '1', 'testN100')
     evaluate(r, inptLCIORec)
+
+
 
    
     

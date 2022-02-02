@@ -146,85 +146,15 @@ def fill_record(inpLCIO, colEcal, colHcal, nevents):
     return b
 
 
-def plot_hits(n, rd):
+
     
-    z = ak.to_numpy(rd[n].z)
-    y = ak.to_numpy(rd[n].y)
-    x = ak.to_numpy(rd[n].x)
-
-    ### X-Z projection
-    figXZ, axXZ = plt.subplots(figsize=(10, 10))
-    axXZ.plot(x.data, z.data, 'o', c='blue', label='Geant4')
-
-    axXZ.set(xlabel='x [mm]', ylabel='z [mm]',
-        title='')
-    axXZ.grid()
-
-    plt.xlim(-700,700)
-    plt.ylim(-100,2100)
-    figXZ.savefig("/mnt/plots/event"+str(n)+"__z-x.png")
-   
-
-    ### X-Y projection
-    figXY, axXY = plt.subplots(figsize=(10, 10))
-    axXY.plot(x.data, y.data, 'o', c='blue', label='Geant4')
-
-    axXY.set(xlabel='x [mm]', ylabel='y [mm]',
-        title='')
-    axXY.grid()
-    axXY.legend()
-
-    plt.xlim(-500,500)
-    plt.ylim(1700,3500)
-    figXY.savefig("/mnt/plots/event"+str(n)+"__y-x.png")
-
-    ### Z-Y projection
-    figZY, axZY = plt.subplots(figsize=(10, 10))
-    axZY.plot(z.data, y.data, 'o', c='blue', label='Geant4')
-
-    axZY.set(xlabel='z [mm]', ylabel='y [mm]',
-        title='')
-    axZY.grid()
-    axZY.legend()
-
-    plt.xlim(0, 500)
-    plt.ylim(1700,3500)
-    figZY.savefig("/mnt/plots/event"+str(n)+"__z-y.png")
-
-def plot_reco(rd, nEvents):
-    
-    ## Process record
-    chargeL = []
-    for i in range(0,nEvents):   
-        ch = rd[i].pfoCh
-        for j in range(0, len(ch[~ak.is_none(ch)])):
-            charge = ch[~ak.is_none(ch)][j]
-            chargeL.append(charge)
-            
-    
-    ## Plot
-    figSE = plt.figure(figsize=(8,8))
-    axSE = figSE.add_subplot(1,1,1)
-    lightblue = (0.1, 0.1, 0.9, 0.3)
-
-    pSEa = axSE.hist(chargeL, bins=3, range=[-1.5, 1.5], edgecolor='dimgrey',  
-                    label = "orig" ,color='lightgray',
-                    histtype='stepfilled')
-    axSE.set_ylim([0, nEvents + nEvents*0.8])
-    axSE.set_xlabel("charge of PFOs", family='serif')
-
-    axSE.text(0.7, 0.95, "nEntries: {:d}".format(len(chargeL)), horizontalalignment='left',verticalalignment='top', 
-                transform=axSE.transAxes, color = 'black', fontsize=15)
-    ## SAVE
-    figSE.savefig("/mnt/plots/chargePFOs.png")
-
 def fill_numpyECAL(record, nEvents):
     """this function reads the awkward array and edits for our needs: Projecting into 30x30 grid"""
     
     #defined binning
-    binX = np.arange(-81, 82, 5.088333)
+    binX = np.arange(-175, -20, 5.088333)
     #binZ large 
-    binZ = np.arange(-119, 201, 5.088333)
+    binZ = np.arange(25,181, 5.088333)
 
     ## Unable to escape using python list here. But we can live with that.
     l = []
@@ -275,15 +205,26 @@ if __name__=="__main__":
    
     parser.add_argument('--lcio', type=str, required=True, help='input LCIO file')
     parser.add_argument('--nEvents', type=int, help='number of events', default=10)
+    parser.add_argument('--outputR', type=str, required=True, help='run name of output hdf5 file')
+    parser.add_argument('--outputP', type=str, required=True, help='part name of output hdf5 file')
 
     opt = parser.parse_args()
 
     nEvents = int(opt.nEvents)
     lcioFile = str(opt.lcio)
+    outP = str(opt.outputP)
+    outR = str(opt.outputR)
 
     record = fill_record(lcioFile, "EcalBarrelCollection", "HcalBarrelRegCollection", nEvents)  
-    plot_reco(record, nEvents)
+    showers, e0 = fill_numpyECAL(record)
 
-    ## Some 2D hits
-    for i in [1,5,10]:
-        plot_hits(i, record)
+    #Open HDF5 file for writing
+    hf = h5py.File('/mnt/run_' + outR + '/pion-shower-' + outP, 'w')
+    grp = hf.create_group("ecal")
+
+    ## write to hdf5 files
+    grp.create_dataset('energy', data=e0)
+    grp.create_dataset('layers', data=showers)
+
+    #close file
+    hf.close()
