@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: ildeventgen-nestedgan-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-02-01T13:55:43.527642',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-02-01T14:15:56.948750',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
       "name": "ILDEventGen_NestedGAN"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
@@ -58,7 +58,7 @@ spec:
     container:
       args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git &&                                 cd
           $PWD/hgAHCal-ECal && pwd &&                                 chmod +x ./runRec.sh
-          && ./runRec.sh "$0" "$1" "$2" ', /tmp/inputs/input-0/data, testN01, '1']
+          && ./runRec.sh "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '1', testN01]
       command: [/bin/bash, -c]
       image: ilcsoft/ilcsoft-spack:latest
       volumeMounts:

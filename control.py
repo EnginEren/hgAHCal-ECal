@@ -8,7 +8,7 @@ import argparse
 import math
 import pickle
 from functions import CellIDDecoder
-from functions import plt_ExampleImage
+#from functions import plt_ExampleImage
 import matplotlib.pyplot as plt
 import random
 import array as arr
@@ -67,6 +67,18 @@ def fill_record(inpLCIO, colEcal, colHcal, nevents):
             b.real(theta)
             b.end_record() 
     
+
+        ## PFO collection
+        pfoCand = evt.getCollection("PandoraPFOs")
+        for p in pfoCand:
+            b.begin_record()
+            b.field("pfoE")
+            b.real(p.getEnergy())
+            b.field("pfoCh")
+            b.real(p.getCharge())
+            b.end_record()  
+
+
         ## ECAL barrel collection
         ecalBarrel = evt.getCollection(colEcal)
         cellIDString = ecalBarrel.getParameters().getStringVal("CellIDEncoding")
@@ -183,6 +195,32 @@ def plot_hits(n, rd):
     plt.ylim(1700,3500)
     figZY.savefig("/mnt/plots/event"+str(n)+"__z-y.png")
 
+def plot_reco(rd, nEvents):
+    
+    ## Process record
+    chargeL = []
+    for i in range(0,nEvents):   
+        ch = rd[i].pfoCh
+        for j in range(0, len(ch[~ak.is_none(ch)])):
+            charge = ch[~ak.is_none(ch)][j]
+            chargeL.append(charge)
+            
+    
+    ## Plot
+    figSE = plt.figure(figsize=(8,8))
+    axSE = figSE.add_subplot(1,1,1)
+    lightblue = (0.1, 0.1, 0.9, 0.3)
+
+    pSEa = axSE.hist(chargeL, bins=3, range=[-1.5, 1.5], edgecolor='dimgrey',  
+                    label = "orig" ,color='lightgray',
+                    histtype='stepfilled')
+    axSE.set_ylim([0, nEvents + nEvents*0.8])
+    axSE.set_xlabel("charge PFOs", family='serif')
+
+    axSE.text(0.7, 0.95, "nEntries: {:d}".format(len(chargeL)), horizontalalignment='left',verticalalignment='top', 
+                transform=axSE.transAxes, color = 'black', fontsize=15)
+    ## SAVE
+    axSE.savefig("/mnt/plots/chargePFOs.png")
 
 
 
@@ -201,5 +239,7 @@ if __name__=="__main__":
     lcioFile = str(opt.lcio)
 
     record = fill_record(lcioFile, "EcalBarrelCollection", "HcalBarrelRegCollection", nEvents)  
-    for i in [1,5,10]:
-        plot_hits(i, record)
+    plot_reco(record, nEvents)
+    
+    #for i in [1,5,10]:
+    #    plot_hits(i, record)
