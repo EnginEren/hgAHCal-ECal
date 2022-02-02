@@ -14,6 +14,7 @@
 # limitations under the License.
 
 
+from tarfile import RECORDSIZE
 import kfp
 from kfp import dsl
 from kfp.components import InputPath, InputTextFile, InputBinaryFile, OutputPath, OutputTextFile, OutputBinaryFile
@@ -101,11 +102,12 @@ def sequential_pipeline():
     """A pipeline with sequential steps."""
     
     r = create_vol()
-    simulation = sim(r, '1', 'testN01')
+    simulation = sim(r, '1', 'testN100')
     simulation.execution_options.caching_strategy.max_cache_staleness = "P0D"
     inptLCIO = dsl.InputArgumentPath(simulation.outputs['data']) 
-    rec(r, inptLCIO, '1', 'testN01')
-    #evaluate(r, inptLCIO)
+    reconst = rec(r, inptLCIO, '1', 'testN100')
+    inptLCIORec = dsl.InputArgumentPath(reconst.outputs['data'])
+    evaluate(r, inptLCIORec)
 
    
     
