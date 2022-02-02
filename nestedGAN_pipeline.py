@@ -77,7 +77,7 @@ def evaluate(v, lcio_file):
 def convert_hdf5(v, recFile, pname, rname):
     return dsl.ContainerOp(
                     name='hdf5 conversion',
-                    image='engineren/pytorch:latest',
+                    image='ilcsoft/py3lcio:lcio-16',
                     command=[ '/bin/bash', '-c'],
                     arguments=['git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal  \
                                 && python create_hdf5.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents 100', recFile, rname, pname],

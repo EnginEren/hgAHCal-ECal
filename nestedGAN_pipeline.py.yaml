@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: ildeventgen-nestedgan-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-02-02T11:42:39.296596',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-02-02T15:22:58.601308',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
       "name": "ILDEventGen_NestedGAN"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
@@ -38,11 +38,44 @@ spec:
     volumes:
     - name: persistent-volume
       persistentVolumeClaim: {claimName: '{{inputs.parameters.persistent-volume-name}}'}
+  - name: hdf5-conversion
+    container:
+      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal                                  &&
+          python create_hdf5.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
+          100', /tmp/inputs/input-0/data, testN100, '1']
+      command: [/bin/bash, -c]
+      image: engineren/pytorch:latest
+      volumeMounts:
+      - {mountPath: /mnt, name: persistent-volume}
+    inputs:
+      parameters:
+      - {name: persistent-volume-name}
+      artifacts:
+      - {name: reconstruction-data, path: /tmp/inputs/input-0/data}
+    outputs:
+      artifacts:
+      - {name: hdf5-conversion-data, path: /mnt/run_testN100/pion-shower_1.hdf5}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - name: persistent-volume
+      persistentVolumeClaim: {claimName: '{{inputs.parameters.persistent-volume-name}}'}
   - name: ildeventgen-nestedgan
     dag:
       tasks:
       - name: control-plots
         template: control-plots
+        dependencies: [persistent-volume, reconstruction]
+        arguments:
+          parameters:
+          - {name: persistent-volume-name, value: '{{tasks.persistent-volume.outputs.parameters.persistent-volume-name}}'}
+          artifacts:
+          - {name: reconstruction-data, from: '{{tasks.reconstruction.outputs.artifacts.reconstruction-data}}'}
+      - name: hdf5-conversion
+        template: hdf5-conversion
         dependencies: [persistent-volume, reconstruction]
         arguments:
           parameters:
