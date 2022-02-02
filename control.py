@@ -220,7 +220,7 @@ def plot_reco(rd, nEvents):
     axSE.text(0.7, 0.95, "nEntries: {:d}".format(len(chargeL)), horizontalalignment='left',verticalalignment='top', 
                 transform=axSE.transAxes, color = 'black', fontsize=15)
     ## SAVE
-    axSE.savefig("/mnt/plots/chargePFOs.png")
+    figSE.savefig("/mnt/plots/chargePFOs.png")
 
 
 
