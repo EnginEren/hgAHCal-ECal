@@ -64,7 +64,7 @@ def evaluate(v, lcio_file):
                     arguments=['cd LCIO; source setup.sh; cd .. && \
                                 conda init bash; source /root/.bashrc; conda activate root_env && mkdir -p /mnt/plots && \
                                 git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal && \
-                                python control.py --lcio "$0" --nEvents 20 && \
+                                python control.py --lcio "$0" --nEvents 100 && \
                                 cd /mnt/plots/ && touch pion_plots.tar.gz && \
                                 tar --exclude=pion_plots.tar.gz -zcvf pion_plots.tar.gz .', lcio_file],
                     pvolumes={"/mnt": v.volume},

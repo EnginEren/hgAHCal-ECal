@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: ildeventgen-nestedgan-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-02-02T11:27:10.517472',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-02-02T11:42:39.296596',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
       "name": "ILDEventGen_NestedGAN"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
@@ -15,7 +15,7 @@ spec:
           init bash; source /root/.bashrc; conda activate root_env && mkdir -p /mnt/plots
           &&                                 git clone https://github.com/EnginEren/hgAHCal-ECal.git
           && cd $PWD/hgAHCal-ECal &&                                 python control.py
-          --lcio "$0" --nEvents 20 &&                                 cd /mnt/plots/
+          --lcio "$0" --nEvents 100 &&                                 cd /mnt/plots/
           && touch pion_plots.tar.gz &&                                 tar --exclude=pion_plots.tar.gz
           -zcvf pion_plots.tar.gz .', /tmp/inputs/input-0/data]
       command: [/bin/bash, -c]
