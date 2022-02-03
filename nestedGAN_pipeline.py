@@ -79,7 +79,9 @@ def convert_hdf5(v, recFile, pname, rname):
                     name='hdf5 conversion',
                     image='ilcsoft/py3lcio:lcio-16',
                     command=[ '/bin/bash', '-c'],
-                    arguments=['git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal  \
+                    arguments=['cd LCIO; source setup.sh; cd .. && \
+                                conda init bash; source /root/.bashrc; conda activate root_env && \
+                                git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal  \
                                 && python create_hdf5.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents 100', recFile, rname, pname],
                     pvolumes={"/mnt": v.volume},
                     file_outputs = {

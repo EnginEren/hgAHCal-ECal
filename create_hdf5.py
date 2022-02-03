@@ -216,7 +216,7 @@ if __name__=="__main__":
     outR = str(opt.outputR)
 
     record = fill_record(lcioFile, "EcalBarrelCollection", "HcalBarrelRegCollection", nEvents)  
-    showers, e0 = fill_numpyECAL(record)
+    showers, e0 = fill_numpyECAL(record, nEvents)
 
     #Open HDF5 file for writing
     hf = h5py.File('/mnt/run_' + outR + '/pion-shower-' + outP, 'w')
