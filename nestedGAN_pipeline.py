@@ -100,7 +100,7 @@ def sequential_pipeline():
     
     r = create_vol()
     simulation = sim(r, '1', 'testN100')
-    simulation.execution_options.caching_strategy.max_cache_staleness = "P0D"
+    #simulation.execution_options.caching_strategy.max_cache_staleness = "P0D"
     inptLCIO = dsl.InputArgumentPath(simulation.outputs['data']) 
     reconst = rec(r, inptLCIO, '1', 'testN100')
     inptLCIORec = dsl.InputArgumentPath(reconst.outputs['data'])

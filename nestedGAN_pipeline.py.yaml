@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: ildeventgen-nestedgan-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-02-03T09:29:36.645978',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-02-03T09:58:45.807032',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
       "name": "ILDEventGen_NestedGAN"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
@@ -44,7 +44,7 @@ spec:
           init bash; source /root/.bashrc; conda activate root_env &&                                 git
           clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal                                  &&
           python create_hdf5.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
-          100', /tmp/inputs/input-0/data, testN100, '1']
+          100; ls /mnt/run_testN100', /tmp/inputs/input-0/data, testN100, '1']
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
       volumeMounts:
@@ -172,7 +172,6 @@ spec:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
         pipelines.kubeflow.org/pipeline-sdk-type: kfp
         pipelines.kubeflow.org/enable_caching: "true"
-      annotations: {pipelines.kubeflow.org/max_cache_staleness: P0D}
     volumes:
     - name: persistent-volume
       persistentVolumeClaim: {claimName: '{{inputs.parameters.persistent-volume-name}}'}

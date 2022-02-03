@@ -219,7 +219,7 @@ if __name__=="__main__":
     showers, e0 = fill_numpyECAL(record, nEvents)
 
     #Open HDF5 file for writing
-    hf = h5py.File('/mnt/run_' + outR + '/pion-shower_' + outP, 'w')
+    hf = h5py.File('/mnt/run_' + outR + '/pion-shower_' + outP + '.hdf5', 'w')
     grp = hf.create_group("ecal")
 
     ## write to hdf5 files
@@ -228,4 +228,4 @@ if __name__=="__main__":
 
     #close file
     hf.close()
-    os.listdir('/mnt/run_' + outR)
+    
