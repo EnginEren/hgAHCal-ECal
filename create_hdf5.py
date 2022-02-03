@@ -8,7 +8,7 @@ import math
 from functions import CellIDDecoder
 import matplotlib.pyplot as plt
 import array as arr
-
+import os
 
 font = {'family' : 'serif',
         'size'   : 18}
@@ -228,3 +228,4 @@ if __name__=="__main__":
 
     #close file
     hf.close()
+    os.listdir('/mnt/run_' + outR)
