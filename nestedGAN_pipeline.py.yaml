@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: ildeventgen-nestedgan-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-02-03T09:58:45.807032',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-02-04T10:40:51.622445',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
       "name": "ILDEventGen_NestedGAN"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
@@ -15,9 +15,10 @@ spec:
           init bash; source /root/.bashrc; conda activate root_env && mkdir -p /mnt/plots
           &&                                 git clone https://github.com/EnginEren/hgAHCal-ECal.git
           && cd $PWD/hgAHCal-ECal &&                                 python control.py
-          --lcio "$0" --nEvents 100 &&                                 cd /mnt/plots/
-          && touch pion_plots.tar.gz &&                                 tar --exclude=pion_plots.tar.gz
-          -zcvf pion_plots.tar.gz .', /tmp/inputs/input-0/data]
+          --lcio "$0" --h5file "$1" --nEvents 100 &&                                 cd
+          /mnt/plots/ && touch pion_plots.tar.gz &&                                 tar
+          --exclude=pion_plots.tar.gz -zcvf pion_plots.tar.gz .', /tmp/inputs/input-0/data,
+        /tmp/inputs/input-1/data]
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
       volumeMounts:
@@ -27,6 +28,7 @@ spec:
       - {name: persistent-volume-name}
       artifacts:
       - {name: reconstruction-data, path: /tmp/inputs/input-0/data}
+      - {name: hdf5-conversion-data, path: /tmp/inputs/input-1/data}
     outputs:
       artifacts:
       - {name: control-plots-data, path: /mnt/plots/pion_plots.tar.gz}
@@ -44,7 +46,7 @@ spec:
           init bash; source /root/.bashrc; conda activate root_env &&                                 git
           clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal                                  &&
           python create_hdf5.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
-          100; ls /mnt/run_testN100', /tmp/inputs/input-0/data, testN100, '1']
+          100', /tmp/inputs/input-0/data, testN100, '1']
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
       volumeMounts:
@@ -70,11 +72,12 @@ spec:
       tasks:
       - name: control-plots
         template: control-plots
-        dependencies: [persistent-volume, reconstruction]
+        dependencies: [hdf5-conversion, persistent-volume, reconstruction]
         arguments:
           parameters:
           - {name: persistent-volume-name, value: '{{tasks.persistent-volume.outputs.parameters.persistent-volume-name}}'}
           artifacts:
+          - {name: hdf5-conversion-data, from: '{{tasks.hdf5-conversion.outputs.artifacts.hdf5-conversion-data}}'}
           - {name: reconstruction-data, from: '{{tasks.reconstruction.outputs.artifacts.reconstruction-data}}'}
       - name: hdf5-conversion
         template: hdf5-conversion

@@ -56,7 +56,7 @@ def rec(v, lcio_file, pname, rname):
     )   
 
 
-def evaluate(v, lcio_file):
+def evaluate(v, lcio_file, inptH5):
     return dsl.ContainerOp(
                     name='Control_Plots',
                     image='ilcsoft/py3lcio:lcio-16',
@@ -64,9 +64,9 @@ def evaluate(v, lcio_file):
                     arguments=['cd LCIO; source setup.sh; cd .. && \
                                 conda init bash; source /root/.bashrc; conda activate root_env && mkdir -p /mnt/plots && \
                                 git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal && \
-                                python control.py --lcio "$0" --nEvents 100 && \
+                                python control.py --lcio "$0" --h5file "$1" --nEvents 100 && \
                                 cd /mnt/plots/ && touch pion_plots.tar.gz && \
-                                tar --exclude=pion_plots.tar.gz -zcvf pion_plots.tar.gz .', lcio_file],
+                                tar --exclude=pion_plots.tar.gz -zcvf pion_plots.tar.gz .', lcio_file, inptH5],
                     pvolumes={"/mnt": v.volume},
                     file_outputs = {
                         'data': '/mnt/plots/pion_plots.tar.gz'
@@ -102,10 +102,14 @@ def sequential_pipeline():
     simulation = sim(r, '1', 'testN100')
     #simulation.execution_options.caching_strategy.max_cache_staleness = "P0D"
     inptLCIO = dsl.InputArgumentPath(simulation.outputs['data']) 
+    
     reconst = rec(r, inptLCIO, '1', 'testN100')
     inptLCIORec = dsl.InputArgumentPath(reconst.outputs['data'])
-    convert_hdf5(r, inptLCIORec, '1', 'testN100')
-    evaluate(r, inptLCIORec)
+    
+    hf5 = convert_hdf5(r, inptLCIORec, '1', 'testN100')
+    
+    inputH5 = dsl.InputArgumentPath(hf5.outputs['data'])
+    evaluate(r, inptLCIORec, inputH5)
 
 
 
