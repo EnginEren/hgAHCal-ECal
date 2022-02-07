@@ -339,4 +339,6 @@ if __name__=="__main__":
     ## some plots
     f = h5py.File(h5File,'r')
     showers = f['ecal/layers']
+    hcal_showers = f['hcal/layers']
     plt_ExampleImage(showers, model_title='pionsECAL', save_title='Pions-ECAL', draw_3D=False, n=3)
+    plt_ExampleImage(hcal_showers, model_title='pionsHCAL', save_title='Pions-ECAL', draw_3D=False, n=3)

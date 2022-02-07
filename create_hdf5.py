@@ -196,6 +196,52 @@ def fill_numpyECAL(record, nEvents):
 
 
 
+def fill_numpyHCAL(record, nEvents):
+    """this function reads the awkward array and edits for our needs: Projecting into 30x30 grid"""
+    
+    #defined binning
+    binX = np.arange(-730, 200, 30.5)
+    #binZ large 
+    binZ = np.arange(-300,620, 30.5)
+
+    ## Unable to escape using python list here. But we can live with that.
+    l = []
+    E = []
+    
+    for i in range(0, nEvents):
+
+        #Get hits and convert them into numpy array 
+        z = ak.to_numpy(record[i].z)
+        x = ak.to_numpy(record[i].x)
+        y = ak.to_numpy(record[i].y)
+        e = ak.to_numpy(record[i].e)
+
+        #Get indicent energies
+        incE = ak.to_numpy(record[i].E)
+        E.append(incE.compressed()[0])
+
+
+
+        layers = []
+        #loop over layers and project them into 2d grid.
+        for j in range(30,48):
+            idx = np.where((y <= (hmap[j] + 5.0)) & (y > (hmap[j] - 5.0)))
+            xlayer = x.take(idx)[0]
+            zlayer = z.take(idx)[0]
+            elayer = e.take(idx)[0]
+            H, xedges, yedges = np.histogram2d(xlayer, zlayer, bins=(binX, binZ), weights=elayer)
+            layers.append(H)
+
+   
+        l.append(layers)
+    
+    ## convert them into numpy array
+    shower = np.asarray(l)
+    e0 = np.reshape(np.asarray(E), (-1,1))
+    
+
+    return shower, e0
+
 
 
 
@@ -215,8 +261,13 @@ if __name__=="__main__":
     outP = str(opt.outputP)
     outR = str(opt.outputR)
 
+
     record = fill_record(lcioFile, "EcalBarrelCollection", "HcalBarrelRegCollection", nEvents)  
+    ##ECAL PART
     showers, e0 = fill_numpyECAL(record, nEvents)
+
+    ##HCAL PART
+    hcal_showers, h_e0 = fill_numpyHCAL(record, nEvents)
 
     #Open HDF5 file for writing
     hf = h5py.File('/mnt/run_' + outR + '/pion-shower_' + outP + '.hdf5', 'w')
@@ -225,6 +276,10 @@ if __name__=="__main__":
     ## write to hdf5 files
     grp.create_dataset('energy', data=e0)
     grp.create_dataset('layers', data=showers)
+
+    hgrp = hf.create_group("hcal")
+    hgrp.create_dataset('energy', data=h_e0)
+    hgrp.create_dataset('layers', data=hcal_showers)
 
     #close file
     hf.close()
