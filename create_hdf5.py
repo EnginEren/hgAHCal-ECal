@@ -154,7 +154,7 @@ def fill_numpyECAL(record, nEvents):
     #defined binning
     binX = np.arange(-235, -60, 5.088333)
     #binZ large 
-    binZ = np.arange(68,222, 5.088333)
+    binZ = np.arange(80,235, 5.088333)
 
     ## Unable to escape using python list here. But we can live with that.
     l = []
