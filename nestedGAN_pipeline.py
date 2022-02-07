@@ -100,14 +100,16 @@ def sequential_pipeline():
     
     r = create_vol()
     simulation = sim(r, '1', 'testN100')
-    #simulation.execution_options.caching_strategy.max_cache_staleness = "P0D"
+    simulation.execution_options.caching_strategy.max_cache_staleness = "P0D"
     inptLCIO = dsl.InputArgumentPath(simulation.outputs['data']) 
     
     reconst = rec(r, inptLCIO, '1', 'testN100')
     inptLCIORec = dsl.InputArgumentPath(reconst.outputs['data'])
     
     hf5 = convert_hdf5(r, inptLCIORec, '1', 'testN100')
-    
+    hf5.execution_options.caching_strategy.max_cache_staleness = "P0D"
+
+
     inputH5 = dsl.InputArgumentPath(hf5.outputs['data'])
     evaluate(r, inptLCIORec, inputH5)
 
