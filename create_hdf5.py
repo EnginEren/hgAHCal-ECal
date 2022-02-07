@@ -152,9 +152,9 @@ def fill_numpyECAL(record, nEvents):
     """this function reads the awkward array and edits for our needs: Projecting into 30x30 grid"""
     
     #defined binning
-    binX = np.arange(-235, -60, 5.088333)
+    binX = np.arange(-220, -65, 5.088333)
     #binZ large 
-    binZ = np.arange(80,235, 5.088333)
+    binZ = np.arange(96, 250, 5.088333)
 
     ## Unable to escape using python list here. But we can live with that.
     l = []
