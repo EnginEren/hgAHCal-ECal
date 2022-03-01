@@ -224,7 +224,7 @@ def fill_numpyHCAL(record, nEvents):
 
         layers = []
         #loop over layers and project them into 2d grid.
-        for j in range(30,48):
+        for j in range(30,78):
             idx = np.where((y <= (hmap[j] + 5.0)) & (y > (hmap[j] - 5.0)))
             xlayer = x.take(idx)[0]
             zlayer = z.take(idx)[0]
