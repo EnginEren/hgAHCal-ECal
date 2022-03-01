@@ -152,7 +152,7 @@ def fill_numpyECAL(record, nEvents):
     """this function reads the awkward array and edits for our needs: Projecting into 30x30 grid"""
     
     #defined binning
-    binX = np.arange(-220, -65, 5.088333)
+    binX = np.arange(-250, -95, 5.088333)
     #binZ large 
     binZ = np.arange(96, 250, 5.088333)
 
@@ -200,7 +200,7 @@ def fill_numpyHCAL(record, nEvents):
     """this function reads the awkward array and edits for our needs: Projecting into 30x30 grid"""
     
     #defined binning
-    binX = np.arange(-730, 200, 30.5)
+    binX = np.arange(-700, 230, 30.5)
     #binZ large 
     binZ = np.arange(-300,620, 30.5)
 
