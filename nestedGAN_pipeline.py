@@ -64,7 +64,7 @@ def evaluate(v, lcio_file, inptH5):
                     arguments=['cd LCIO; source setup.sh; cd .. && \
                                 conda init bash; source /root/.bashrc; conda activate root_env && mkdir -p /mnt/plots && \
                                 git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal && \
-                                python control.py --lcio "$0" --h5file "$1" --nEvents 100 && \
+                                python control.py --lcio "$0" --h5file "$1" --nEvents 1000 && \
                                 cd /mnt/plots/ && touch pion_plots.tar.gz && \
                                 tar --exclude=pion_plots.tar.gz -zcvf pion_plots.tar.gz .', lcio_file, inptH5],
                     pvolumes={"/mnt": v.volume},
@@ -82,10 +82,10 @@ def convert_hdf5(v, recFile, pname, rname):
                     arguments=['cd LCIO; source setup.sh; cd .. && \
                                 conda init bash; source /root/.bashrc; conda activate root_env && \
                                 git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal  \
-                                && python create_hdf5.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents 100', recFile, rname, pname],
+                                && python create_hdf5.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents 1000', recFile, rname, pname],
                     pvolumes={"/mnt": v.volume},
                     file_outputs = {
-                        'data': '/mnt/run_'+ rname + '/pion-shower_' + pname + '.hdf5'
+                        'data': '/mnt/run_'+ rname + '/pion-shower_' + pname + '.tar.gz'
                     }
     )   
 
@@ -101,14 +101,14 @@ def sequential_pipeline():
     r = create_vol()
     for i in range(1,4):
         simulation = sim(r, str(i), 'prod')
-        simulation.execution_options.caching_strategy.max_cache_staleness = "P0D"
+        #simulation.execution_options.caching_strategy.max_cache_staleness = "P0D"
         inptLCIO = dsl.InputArgumentPath(simulation.outputs['data']) 
         
         reconst = rec(r, inptLCIO, str(i), 'prod')
         inptLCIORec = dsl.InputArgumentPath(reconst.outputs['data'])
         
         hf5 = convert_hdf5(r, inptLCIORec, str(i), 'prod')
-        hf5.execution_options.caching_strategy.max_cache_staleness = "P0D"
+        #hf5.execution_options.caching_strategy.max_cache_staleness = "P0D"
 
 
     inputH5 = dsl.InputArgumentPath(hf5.outputs['data'])

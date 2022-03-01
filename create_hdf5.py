@@ -9,6 +9,7 @@ from functions import CellIDDecoder
 import matplotlib.pyplot as plt
 import array as arr
 import os
+import tarfile
 
 font = {'family' : 'serif',
         'size'   : 18}
@@ -284,3 +285,10 @@ if __name__=="__main__":
     #close file
     hf.close()
     
+    ## Tar file
+    filename = '/mnt/run_' + outR + '/pion-shower_' + outP + '.tar.gz'
+    file_obj = tarfile.open(filename, "w")
+    file_obj.add('/mnt/run_' + outR + '/pion-shower_' + outP + '.hdf5')
+    file_obj.close()
+
+
