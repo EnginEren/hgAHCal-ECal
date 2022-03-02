@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: ildeventgen-nestedgan-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-03-01T12:59:22.301254',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-03-01T16:02:57.495519',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
       "name": "ILDEventGen_NestedGAN"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
@@ -15,7 +15,7 @@ spec:
           init bash; source /root/.bashrc; conda activate root_env && mkdir -p /mnt/plots
           &&                                 git clone https://github.com/EnginEren/hgAHCal-ECal.git
           && cd $PWD/hgAHCal-ECal &&                                 python control.py
-          --lcio "$0" --h5file "$1" --nEvents 100 &&                                 cd
+          --lcio "$0" --h5file "$1" --nEvents 1000 &&                                 cd
           /mnt/plots/ && touch pion_plots.tar.gz &&                                 tar
           --exclude=pion_plots.tar.gz -zcvf pion_plots.tar.gz .', /tmp/inputs/input-0/data,
         /tmp/inputs/input-1/data]
@@ -46,7 +46,7 @@ spec:
           init bash; source /root/.bashrc; conda activate root_env &&                                 git
           clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal                                  &&
           python create_hdf5.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
-          100', /tmp/inputs/input-0/data, prod, '1']
+          1000', /tmp/inputs/input-0/data, prod, '1']
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
       volumeMounts:
@@ -58,13 +58,12 @@ spec:
       - {name: reconstruction-data, path: /tmp/inputs/input-0/data}
     outputs:
       artifacts:
-      - {name: hdf5-conversion-data, path: /mnt/run_prod/pion-shower_1.hdf5}
+      - {name: hdf5-conversion-data, path: /mnt/run_prod/pion-shower_1.tar.gz}
     metadata:
       labels:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
         pipelines.kubeflow.org/pipeline-sdk-type: kfp
         pipelines.kubeflow.org/enable_caching: "true"
-      annotations: {pipelines.kubeflow.org/max_cache_staleness: P0D}
     volumes:
     - name: persistent-volume
       persistentVolumeClaim: {claimName: '{{inputs.parameters.persistent-volume-name}}'}
@@ -74,7 +73,7 @@ spec:
           init bash; source /root/.bashrc; conda activate root_env &&                                 git
           clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal                                  &&
           python create_hdf5.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
-          100', /tmp/inputs/input-0/data, prod, '2']
+          1000', /tmp/inputs/input-0/data, prod, '2']
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
       volumeMounts:
@@ -86,13 +85,12 @@ spec:
       - {name: reconstruction-2-data, path: /tmp/inputs/input-0/data}
     outputs:
       artifacts:
-      - {name: hdf5-conversion-2-data, path: /mnt/run_prod/pion-shower_2.hdf5}
+      - {name: hdf5-conversion-2-data, path: /mnt/run_prod/pion-shower_2.tar.gz}
     metadata:
       labels:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
         pipelines.kubeflow.org/pipeline-sdk-type: kfp
         pipelines.kubeflow.org/enable_caching: "true"
-      annotations: {pipelines.kubeflow.org/max_cache_staleness: P0D}
     volumes:
     - name: persistent-volume
       persistentVolumeClaim: {claimName: '{{inputs.parameters.persistent-volume-name}}'}
@@ -102,7 +100,7 @@ spec:
           init bash; source /root/.bashrc; conda activate root_env &&                                 git
           clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal                                  &&
           python create_hdf5.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
-          100', /tmp/inputs/input-0/data, prod, '3']
+          1000', /tmp/inputs/input-0/data, prod, '3']
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
       volumeMounts:
@@ -114,13 +112,12 @@ spec:
       - {name: reconstruction-3-data, path: /tmp/inputs/input-0/data}
     outputs:
       artifacts:
-      - {name: hdf5-conversion-3-data, path: /mnt/run_prod/pion-shower_3.hdf5}
+      - {name: hdf5-conversion-3-data, path: /mnt/run_prod/pion-shower_3.tar.gz}
     metadata:
       labels:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
         pipelines.kubeflow.org/pipeline-sdk-type: kfp
         pipelines.kubeflow.org/enable_caching: "true"
-      annotations: {pipelines.kubeflow.org/max_cache_staleness: P0D}
     volumes:
     - name: persistent-volume
       persistentVolumeClaim: {claimName: '{{inputs.parameters.persistent-volume-name}}'}
@@ -326,7 +323,6 @@ spec:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
         pipelines.kubeflow.org/pipeline-sdk-type: kfp
         pipelines.kubeflow.org/enable_caching: "true"
-      annotations: {pipelines.kubeflow.org/max_cache_staleness: P0D}
     volumes:
     - name: persistent-volume
       persistentVolumeClaim: {claimName: '{{inputs.parameters.persistent-volume-name}}'}
@@ -351,7 +347,6 @@ spec:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
         pipelines.kubeflow.org/pipeline-sdk-type: kfp
         pipelines.kubeflow.org/enable_caching: "true"
-      annotations: {pipelines.kubeflow.org/max_cache_staleness: P0D}
     volumes:
     - name: persistent-volume
       persistentVolumeClaim: {claimName: '{{inputs.parameters.persistent-volume-name}}'}
@@ -376,7 +371,6 @@ spec:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
         pipelines.kubeflow.org/pipeline-sdk-type: kfp
         pipelines.kubeflow.org/enable_caching: "true"
-      annotations: {pipelines.kubeflow.org/max_cache_staleness: P0D}
     volumes:
     - name: persistent-volume
       persistentVolumeClaim: {claimName: '{{inputs.parameters.persistent-volume-name}}'}
