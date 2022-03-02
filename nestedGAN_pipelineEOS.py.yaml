@@ -1,0 +1,83 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: ildeventgen-nestedgan-
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-03-02T13:25:11.039147',
+    pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
+      "name": "ILDEventGen_NestedGAN"}'}
+  labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
+spec:
+  entrypoint: ildeventgen-nestedgan
+  templates:
+  - name: ildeventgen-nestedgan
+    dag:
+      tasks:
+      - {name: simulation, template: simulation}
+      - {name: simulation-2, template: simulation-2}
+      - {name: simulation-3, template: simulation-3}
+  - name: simulation
+    container:
+      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git  &&                                 cd
+          $PWD/hgAHCal-ECal && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh
+          "$0" "$1" ', '1', prodEOS]
+      command: [/bin/bash, -c]
+      image: ilcsoft/ilcsoft-spack:latest
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/max_cache_staleness: P0D}
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
+  - name: simulation-2
+    container:
+      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git  &&                                 cd
+          $PWD/hgAHCal-ECal && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh
+          "$0" "$1" ', '2', prodEOS]
+      command: [/bin/bash, -c]
+      image: ilcsoft/ilcsoft-spack:latest
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/max_cache_staleness: P0D}
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
+  - name: simulation-3
+    container:
+      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git  &&                                 cd
+          $PWD/hgAHCal-ECal && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh
+          "$0" "$1" ', '3', prodEOS]
+      command: [/bin/bash, -c]
+      image: ilcsoft/ilcsoft-spack:latest
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/max_cache_staleness: P0D}
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
+  arguments:
+    parameters: []
+  serviceAccountName: pipeline-runner

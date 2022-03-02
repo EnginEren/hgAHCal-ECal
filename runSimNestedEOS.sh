@@ -18,12 +18,12 @@ n=$1
 r=$2
 
 echo "-- Running DDSim..."
-ddsim --outputFile ./pion-shower_$n.slcio --compactFile $lcgeo_DIR/ILD/compact/${SIM_MODEL}/${SIM_MODEL}.xml --steeringFile ddsim_steer_macro.py 
+ddsim --outputFile /eos/user/e/eneren/sim_lcio_files/pion-shower_$n.slcio --compactFile $lcgeo_DIR/ILD/compact/${SIM_MODEL}/${SIM_MODEL}.xml --steeringFile ddsim_steer_macro.py 
 
-echo "Converting: LCIO --> root file"
-Marlin create_root_tree.xml --global.LCIOInputFiles=./pion-shower_$n.slcio --MyAIDAProcessor.FileName=pion-shower_$n;
+#echo "Converting: LCIO --> root file"
+#Marlin create_root_tree.xml --global.LCIOInputFiles=./pion-shower_$n.slcio --MyAIDAProcessor.FileName=pion-shower_$n;
 
-mkdir -p /eos/user/e/eneren/run_$r 
-mv ./pion-shower_$n.slcio /eos/user/e/eneren/run_$r 
-mv ./pion-shower_$n.root /eos/user/e/eneren/run_$r
+#mkdir -p /eos/user/e/eneren/run_$r 
+#mv ./pion-shower_$n.slcio /eos/user/e/eneren/run_$r 
+#mv ./pion-shower_$n.root /eos/user/e/eneren/run_$r
 

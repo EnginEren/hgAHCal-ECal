@@ -18,7 +18,15 @@ from tarfile import RECORDSIZE
 import kfp
 from kfp import dsl
 from kfp.components import InputPath, InputTextFile, InputBinaryFile, OutputPath, OutputTextFile, OutputBinaryFile
+from kubernetes import client as k8s_client
 
+eos_host_path = k8s_client.V1HostPathVolumeSource(path='/var/eos')
+eos_volume = k8s_client.V1Volume(name='eos', host_path=eos_host_path)
+eos_volume_mount = k8s_client.V1VolumeMount(name=eos_volume.name, mount_path='/eos')
+
+krb_secret = k8s_client.V1SecretVolumeSource(secret_name='krb-secret')
+krb_secret_volume = k8s_client.V1Volume(name='krb-secret-vol', secret=krb_secret)
+krb_secret_volume_mount = k8s_client.V1VolumeMount(name=krb_secret_volume.name, mount_path='/secret/krb-secret-vol')
 
 
 def sim(pname, rname):
@@ -27,8 +35,8 @@ def sim(pname, rname):
                     image='ilcsoft/ilcsoft-spack:latest',
                     command=[ '/bin/bash', '-c'],
                     arguments=['git clone https://github.com/EnginEren/hgAHCal-ECal.git  && \
-                                cd $PWD/hgAHCal-ECal && chmod +x ./runSimNested.sh && ./runSimNested.sh "$0" "$1" ', pname, rname]
-    )    
+                                cd $PWD/hgAHCal-ECal && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh "$0" "$1" ', pname, rname]
+    ).add_volume(eos_volume).add_volume_mount(eos_volume_mount).add_volume(krb_secret_volume).add_volume_mount(krb_secret_volume_mount)    
 
 def rec(v, lcio_file, pname, rname):
     return dsl.ContainerOp(
@@ -88,7 +96,7 @@ def sequential_pipeline():
     """A pipeline with sequential steps."""
     
     for i in range(1,4):
-        simulation = sim(str(i), 'prod')
+        simulation = sim(str(i), 'prodEOS')
         simulation.execution_options.caching_strategy.max_cache_staleness = "P0D"
         #inptLCIO = dsl.InputArgumentPath(simulation.outputs['data']) 
         
