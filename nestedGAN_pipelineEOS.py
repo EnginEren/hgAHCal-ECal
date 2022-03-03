@@ -54,6 +54,9 @@ def rec(lcio_file, pname, rname):
                                 cp /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 && \
                                 chmod 600 /tmp/krb5cc_0 &&  \
                                 chmod +x ./runRec.sh && ./runRec.sh "$0" "$1" "$2" ', lcio_file, pname, rname ],
+                    file_outputs={
+                        'metadata': '/mnt/lcio_rec_path'
+                    }    
     ).add_volume(eos_volume).add_volume_mount(eos_volume_mount).add_volume(krb_secret_volume).add_volume_mount(krb_secret_volume_mount)   
 
 
@@ -65,6 +68,7 @@ def evaluate(v, lcio_file, inptH5):
                     arguments=['cd LCIO; source setup.sh; cd .. && \
                                 conda init bash; source /root/.bashrc; conda activate root_env && mkdir -p /mnt/plots && \
                                 git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal && \
+                                cp /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0 && \
                                 python control.py --lcio "$0" --h5file "$1" --nEvents 1000 && \
                                 cd /mnt/plots/ && touch pion_plots.tar.gz && \
                                 tar --exclude=pion_plots.tar.gz -zcvf pion_plots.tar.gz .', lcio_file, inptH5],
@@ -75,20 +79,18 @@ def evaluate(v, lcio_file, inptH5):
                     
     )   
 
-def convert_hdf5(v, recFile, pname, rname):
+def convert_hdf5(recFile, pname, rname):
     return dsl.ContainerOp(
                     name='hdf5 conversion',
                     image='ilcsoft/py3lcio:lcio-16',
                     command=[ '/bin/bash', '-c'],
                     arguments=['cd LCIO; source setup.sh; cd .. && \
                                 conda init bash; source /root/.bashrc; conda activate root_env && \
-                                git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal  \
-                                && python create_hdf5.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents 1000', recFile, rname, pname],
-                    pvolumes={"/mnt": v.volume},
-                    file_outputs = {
-                        'data': '/mnt/run_'+ rname + '/pion-shower_' + pname + '.tar.gz'
-                    }
+                                git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal \
+                                cp /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0 \
+                                && python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents 100', recFile, rname, pname]
     )   
+
 
 
 @dsl.pipeline(
@@ -105,10 +107,10 @@ def sequential_pipeline():
         inptLCIO = dsl.InputArgumentPath(simulation.outputs['metadata']) 
         
         reconst = rec(inptLCIO, str(i), 'testEOS')
-        #inptLCIORec = dsl.InputArgumentPath(reconst.outputs['data'])
+        inptLCIORec = dsl.InputArgumentPath(reconst.outputs['metadata'])
         
-        #hf5 = convert_hdf5(r, inptLCIORec, str(i), 'prod')
-        #hf5.execution_options.caching_strategy.max_cache_staleness = "P0D"
+        hf5 = convert_hdf5(inptLCIORec, str(i), 'testEOS')
+        hf5.execution_options.caching_strategy.max_cache_staleness = "P0D"
 
 
     #inputH5 = dsl.InputArgumentPath(hf5.outputs['data'])
