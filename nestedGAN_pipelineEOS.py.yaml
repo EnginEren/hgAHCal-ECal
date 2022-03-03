@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: ildeventgen-nestedgan-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-03-03T10:15:43.437681',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-03-03T10:32:22.452788',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
       "name": "ILDEventGen_NestedGAN"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
@@ -122,7 +122,7 @@ spec:
       - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
     outputs:
       artifacts:
-      - {name: simulation-metadata, path: /tmp/lcio_path}
+      - {name: simulation-metadata, path: /mnt/lcio_path}
     metadata:
       labels:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
@@ -148,7 +148,7 @@ spec:
       - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
     outputs:
       artifacts:
-      - {name: simulation-2-metadata, path: /tmp/lcio_path}
+      - {name: simulation-2-metadata, path: /mnt/lcio_path}
     metadata:
       labels:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
@@ -174,7 +174,7 @@ spec:
       - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
     outputs:
       artifacts:
-      - {name: simulation-3-metadata, path: /tmp/lcio_path}
+      - {name: simulation-3-metadata, path: /mnt/lcio_path}
     metadata:
       labels:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9

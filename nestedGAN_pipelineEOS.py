@@ -39,7 +39,7 @@ def sim(pname, rname):
                                 chmod 600 /tmp/krb5cc_0 &&  \
                                 cd $PWD/hgAHCal-ECal && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh "$0" "$1" ', pname, rname],
                     file_outputs={
-                        'metadata': '/tmp/lcio_path'
+                        'metadata': '/mnt/lcio_path'
                     }
 
     ).add_volume(eos_volume).add_volume_mount(eos_volume_mount).add_volume(krb_secret_volume).add_volume_mount(krb_secret_volume_mount)    
