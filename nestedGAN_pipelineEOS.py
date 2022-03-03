@@ -87,9 +87,9 @@ def convert_hdf5(recFile, pname, rname):
                     arguments=['cd LCIO; source setup.sh; cd .. && \
                                 conda init bash; source /root/.bashrc; conda activate root_env && \
                                 git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal && \
-                                cp /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0 && \
+                                cp /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0 \
                                 && python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents 100', recFile, rname, pname]
-    )   
+    ).add_volume(eos_volume).add_volume_mount(eos_volume_mount).add_volume(krb_secret_volume).add_volume_mount(krb_secret_volume_mount)   
 
 
 

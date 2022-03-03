@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: ildeventgen-nestedgan-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-03-03T13:00:44.951763',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-03-03T13:25:13.255917',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
       "name": "ILDEventGen_NestedGAN"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
@@ -15,11 +15,14 @@ spec:
           init bash; source /root/.bashrc; conda activate root_env &&                                 git
           clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal
           &&                                 cp /secret/krb-secret-vol/krb5cc_1000
-          /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0 &&                                 &&
+          /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0                                 &&
           python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
           100', /tmp/inputs/input-0/data, testEOS, '1']
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
     inputs:
       artifacts:
       - {name: reconstruction-metadata, path: /tmp/inputs/input-0/data}
@@ -29,17 +32,25 @@ spec:
         pipelines.kubeflow.org/pipeline-sdk-type: kfp
         pipelines.kubeflow.org/enable_caching: "true"
       annotations: {pipelines.kubeflow.org/max_cache_staleness: P0D}
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
   - name: hdf5-conversion-2
     container:
       args: ['cd LCIO; source setup.sh; cd .. &&                                 conda
           init bash; source /root/.bashrc; conda activate root_env &&                                 git
           clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal
           &&                                 cp /secret/krb-secret-vol/krb5cc_1000
-          /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0 &&                                 &&
+          /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0                                 &&
           python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
           100', /tmp/inputs/input-0/data, testEOS, '2']
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
     inputs:
       artifacts:
       - {name: reconstruction-2-metadata, path: /tmp/inputs/input-0/data}
@@ -49,17 +60,25 @@ spec:
         pipelines.kubeflow.org/pipeline-sdk-type: kfp
         pipelines.kubeflow.org/enable_caching: "true"
       annotations: {pipelines.kubeflow.org/max_cache_staleness: P0D}
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
   - name: hdf5-conversion-3
     container:
       args: ['cd LCIO; source setup.sh; cd .. &&                                 conda
           init bash; source /root/.bashrc; conda activate root_env &&                                 git
           clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal
           &&                                 cp /secret/krb-secret-vol/krb5cc_1000
-          /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0 &&                                 &&
+          /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0                                 &&
           python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
           100', /tmp/inputs/input-0/data, testEOS, '3']
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
     inputs:
       artifacts:
       - {name: reconstruction-3-metadata, path: /tmp/inputs/input-0/data}
@@ -69,6 +88,11 @@ spec:
         pipelines.kubeflow.org/pipeline-sdk-type: kfp
         pipelines.kubeflow.org/enable_caching: "true"
       annotations: {pipelines.kubeflow.org/max_cache_staleness: P0D}
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
   - name: ildeventgen-nestedgan
     dag:
       tasks:

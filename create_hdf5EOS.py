@@ -264,6 +264,10 @@ if __name__=="__main__":
 
     lcioFileReal = os.popen('cat {}'.format(lcioFile)).read()
 
+    lcioFileReal = lcioFileReal.rstrip("\n")
+    print (lcioFileReal)
+
+
     record = fill_record(lcioFileReal, "EcalBarrelCollection", "HcalBarrelRegCollection", nEvents)  
     ##ECAL PART
     showers, e0 = fill_numpyECAL(record, nEvents)
