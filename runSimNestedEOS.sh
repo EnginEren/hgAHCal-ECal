@@ -23,4 +23,4 @@ mkdir -p /eos/user/e/eneren/run_$r
 echo "-- Running DDSim..."
 ddsim --outputFile $EOS_home/run_$r/pion-shower_$n.slcio --compactFile $lcgeo_DIR/ILD/compact/${SIM_MODEL}/${SIM_MODEL}.xml --steeringFile ddsim_steer_macro.py 
 
-
+echo $EOS_home/run_$r/pion-shower_$n.slcio > /mnt/lcio_path

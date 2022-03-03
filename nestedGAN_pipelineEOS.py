@@ -37,7 +37,11 @@ def sim(pname, rname):
                     arguments=['git clone https://github.com/EnginEren/hgAHCal-ECal.git && whoami && \
                                 cp /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 && \
                                 chmod 600 /tmp/krb5cc_0 &&  \
-                                cd $PWD/hgAHCal-ECal && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh "$0" "$1" ', pname, rname]
+                                cd $PWD/hgAHCal-ECal && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh "$0" "$1" ', pname, rname],
+                    file_outputs={
+                        'metadata': '/tmp/lcio_path'
+                    }
+
     ).add_volume(eos_volume).add_volume_mount(eos_volume_mount).add_volume(krb_secret_volume).add_volume_mount(krb_secret_volume_mount)    
 
 def rec(lcio_file, pname, rname):
@@ -98,7 +102,7 @@ def sequential_pipeline():
     for i in range(1,4):
         simulation = sim(str(i), 'testEOS')
         simulation.execution_options.caching_strategy.max_cache_staleness = "P0D"
-        inptLCIO = dsl.InputArgumentPath(simulation.outputs['data']) 
+        inptLCIO = dsl.InputArgumentPath(simulation.outputs['metadata']) 
         
         reconst = rec(inptLCIO, str(i), 'testEOS')
         #inptLCIORec = dsl.InputArgumentPath(reconst.outputs['data'])

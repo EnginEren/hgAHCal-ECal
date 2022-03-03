@@ -12,6 +12,7 @@ cd ./ILDConfig/StandardConfig/production
 
 
 export EOS_home=/eos/user/e/eneren
+export LCIO=$(cat $1)
 r=$3
 
 
@@ -21,7 +22,7 @@ Marlin MarlinStdReco.xml --constant.lcgeo_DIR=$lcgeo_DIR \
         --constant.DetectorModel=${REC_MODEL} \
         --constant.OutputBaseName=pion-shower_$2 \
         --constant.RunBeamCalReco=false \
-        --global.LCIOInputFiles=$EOS_home/$1
+        --global.LCIOInputFiles=$LCIO
 
 
 mv pion-shower_$2_REC.slcio $EOS_home/run_$r
