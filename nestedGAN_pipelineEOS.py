@@ -34,23 +34,23 @@ def sim(pname, rname):
                     name='Simulation',
                     image='ilcsoft/ilcsoft-spack:latest',
                     command=[ '/bin/bash', '-c'],
-                    arguments=['git clone https://github.com/EnginEren/hgAHCal-ECal.git  && \
+                    arguments=['git clone https://github.com/EnginEren/hgAHCal-ECal.git && whoami && \
+                                cp /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 && \
+                                chmod 600 /tmp/krb5cc_0 &&  \
                                 cd $PWD/hgAHCal-ECal && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh "$0" "$1" ', pname, rname]
     ).add_volume(eos_volume).add_volume_mount(eos_volume_mount).add_volume(krb_secret_volume).add_volume_mount(krb_secret_volume_mount)    
 
-def rec(v, lcio_file, pname, rname):
+def rec(lcio_file, pname, rname):
     return dsl.ContainerOp(
                     name='Reconstruction',
                     image='ilcsoft/ilcsoft-spack:latest',
                     command=[ '/bin/bash', '-c'],
                     arguments=['git clone https://github.com/EnginEren/hgAHCal-ECal.git && \
-                                cd $PWD/hgAHCal-ECal && pwd && \
+                                cd $PWD/hgAHCal-ECal && \
+                                cp /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 && \
+                                chmod 600 /tmp/krb5cc_0 &&  \
                                 chmod +x ./runRec.sh && ./runRec.sh "$0" "$1" "$2" ', lcio_file, pname, rname ],
-                    pvolumes={"/mnt": v.volume},
-                    file_outputs={
-                            'data': '/mnt/run_'+ rname + '/pion-shower_' + pname + '_REC.slcio'
-                    },
-    )   
+    ).add_volume(eos_volume).add_volume_mount(eos_volume_mount).add_volume(krb_secret_volume).add_volume_mount(krb_secret_volume_mount)   
 
 
 def evaluate(v, lcio_file, inptH5):
@@ -96,11 +96,11 @@ def sequential_pipeline():
     """A pipeline with sequential steps."""
     
     for i in range(1,4):
-        simulation = sim(str(i), 'prodEOS')
+        simulation = sim(str(i), 'testEOS')
         simulation.execution_options.caching_strategy.max_cache_staleness = "P0D"
-        #inptLCIO = dsl.InputArgumentPath(simulation.outputs['data']) 
+        inptLCIO = dsl.InputArgumentPath(simulation.outputs['data']) 
         
-        #reconst = rec(r, inptLCIO, str(i), 'prod')
+        reconst = rec(inptLCIO, str(i), 'testEOS')
         #inptLCIORec = dsl.InputArgumentPath(reconst.outputs['data'])
         
         #hf5 = convert_hdf5(r, inptLCIORec, str(i), 'prod')
