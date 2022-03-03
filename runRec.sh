@@ -25,4 +25,4 @@ Marlin MarlinStdReco.xml --constant.lcgeo_DIR=$lcgeo_DIR \
         --global.LCIOInputFiles=$LCIO
 
 
-echo $EOS_home/run_$r/pion-shower_$n\_REC.slcio > /mnt/lcio_rec_path
+echo $EOS_home/run_$r/pion-shower_$2\_REC.slcio > /mnt/lcio_rec_path
