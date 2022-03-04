@@ -60,7 +60,7 @@ def rec(lcio_file, pname, rname):
     ).add_volume(eos_volume).add_volume_mount(eos_volume_mount).add_volume(krb_secret_volume).add_volume_mount(krb_secret_volume_mount)   
 
 
-def evaluate(v, lcio_file, inptH5):
+def evaluate(lcio_file, inptH5):
     return dsl.ContainerOp(
                     name='Control_Plots',
                     image='ilcsoft/py3lcio:lcio-16',
@@ -69,10 +69,9 @@ def evaluate(v, lcio_file, inptH5):
                                 conda init bash; source /root/.bashrc; conda activate root_env && mkdir -p /mnt/plots && \
                                 git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal && \
                                 cp /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0 && \
-                                python control.py --lcio "$0" --h5file "$1" --nEvents 1000 && \
+                                python controlEOS.py --lcio "$0" --h5file "$1" --nEvents 100 && \
                                 cd /mnt/plots/ && touch pion_plots.tar.gz && \
                                 tar --exclude=pion_plots.tar.gz -zcvf pion_plots.tar.gz .', lcio_file, inptH5],
-                    pvolumes={"/mnt": v.volume},
                     file_outputs = {
                         'data': '/mnt/plots/pion_plots.tar.gz'
                     }
@@ -102,19 +101,22 @@ def sequential_pipeline():
     """A pipeline with sequential steps."""
     
     for i in range(1,4):
-        simulation = sim(str(i), 'testEOS')
+        runN = 'testEOS'
+        simulation = sim(str(i), runN)
         simulation.execution_options.caching_strategy.max_cache_staleness = "P0D"
         inptLCIO = dsl.InputArgumentPath(simulation.outputs['metadata']) 
         
-        reconst = rec(inptLCIO, str(i), 'testEOS')
+        reconst = rec(inptLCIO, str(i), runN)
         inptLCIORec = dsl.InputArgumentPath(reconst.outputs['metadata'])
         
-        hf5 = convert_hdf5(inptLCIORec, str(i), 'testEOS')
+        hf5 = convert_hdf5(inptLCIORec, str(i), runN)
         hf5.execution_options.caching_strategy.max_cache_staleness = "P0D"
 
+        if i == 1:
+            evaluate(inptLCIORec, '/eos/user/e/eneren/run_'+ runN + '/pion-shower_1.hdf5')
 
-    #inputH5 = dsl.InputArgumentPath(hf5.outputs['data'])
-    #evaluate(r, inptLCIORec, inputH5)
+    
+    
 
 
 

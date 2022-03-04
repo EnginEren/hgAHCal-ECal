@@ -8,7 +8,7 @@ import math
 from functions import CellIDDecoder
 import matplotlib.pyplot as plt
 import array as arr
-
+import os
 
 font = {'family' : 'serif',
         'size'   : 18}
@@ -329,7 +329,11 @@ if __name__=="__main__":
     lcioFile = str(opt.lcio)
     h5File = str(opt.h5file)
 
-    record = fill_record(lcioFile, "EcalBarrelCollection", "HcalBarrelRegCollection", nEvents)  
+    lcioFileReal = os.popen('cat {}'.format(lcioFile)).read()
+    lcioFileReal = lcioFileReal.rstrip("\n")
+    
+
+    record = fill_record(lcioFileReal, "EcalBarrelCollection", "HcalBarrelRegCollection", nEvents)  
     plot_reco(record, nEvents)
 
     ## Some 2D hits
