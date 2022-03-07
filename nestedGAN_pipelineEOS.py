@@ -76,7 +76,7 @@ def evaluate(lcio_file, inptH5):
                         'data': '/mnt/plots/pion_plots.tar.gz'
                     }
                     
-    )   
+    ).add_volume(eos_volume).add_volume_mount(eos_volume_mount).add_volume(krb_secret_volume).add_volume_mount(krb_secret_volume_mount)   
 
 def convert_hdf5(recFile, pname, rname):
     return dsl.ContainerOp(
@@ -87,7 +87,11 @@ def convert_hdf5(recFile, pname, rname):
                                 conda init bash; source /root/.bashrc; conda activate root_env && \
                                 git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal && \
                                 cp /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0 \
-                                && python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents 100', recFile, rname, pname]
+                                && python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents 100', recFile, rname, pname],
+                    file_outputs={
+                        'metadata': '/mnt/hdf5_path'
+                    }                
+                
     ).add_volume(eos_volume).add_volume_mount(eos_volume_mount).add_volume(krb_secret_volume).add_volume_mount(krb_secret_volume_mount)   
 
 
@@ -100,6 +104,7 @@ def convert_hdf5(recFile, pname, rname):
 def sequential_pipeline():
     """A pipeline with sequential steps."""
     
+    
     for i in range(1,4):
         runN = 'testEOS'
         simulation = sim(str(i), runN)
@@ -110,10 +115,11 @@ def sequential_pipeline():
         inptLCIORec = dsl.InputArgumentPath(reconst.outputs['metadata'])
         
         hf5 = convert_hdf5(inptLCIORec, str(i), runN)
+        inptH5 = dsl.InputArgumentPath(hf5.outputs['metadata'])
         hf5.execution_options.caching_strategy.max_cache_staleness = "P0D"
 
         if i == 1:
-            evaluate(inptLCIORec, '/eos/user/e/eneren/run_'+ runN + '/pion-shower_1.hdf5')
+            evaluate(inptLCIORec, inptH5)
 
     
     

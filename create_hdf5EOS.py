@@ -290,6 +290,11 @@ if __name__=="__main__":
     #close file
     hf.close()
     
+    ## meta data for hdf5
+    f = open("/mnt/hdf5_path", "w")
+    f.write('/eos/user/e/eneren/run_' + outR + '/pion-shower_' + outP + '.hdf5')
+    f.close()
+
    
 
 

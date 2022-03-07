@@ -2,13 +2,45 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: ildeventgen-nestedgan-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-03-03T13:25:13.255917',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-03-04T14:57:53.321412',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
       "name": "ILDEventGen_NestedGAN"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
 spec:
   entrypoint: ildeventgen-nestedgan
   templates:
+  - name: control-plots
+    container:
+      args: ['cd LCIO; source setup.sh; cd .. &&                                 conda
+          init bash; source /root/.bashrc; conda activate root_env && mkdir -p /mnt/plots
+          &&                                 git clone https://github.com/EnginEren/hgAHCal-ECal.git
+          && cd $PWD/hgAHCal-ECal &&                                 cp /secret/krb-secret-vol/krb5cc_1000
+          /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0 &&                                 python
+          controlEOS.py --lcio "$0" --h5file "$1" --nEvents 100 &&                                 cd
+          /mnt/plots/ && touch pion_plots.tar.gz &&                                 tar
+          --exclude=pion_plots.tar.gz -zcvf pion_plots.tar.gz .', /tmp/inputs/input-0/data,
+        /eos/user/e/eneren/run_testEOS/pion-shower_1.hdf5]
+      command: [/bin/bash, -c]
+      image: ilcsoft/py3lcio:lcio-16
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    inputs:
+      artifacts:
+      - {name: reconstruction-metadata, path: /tmp/inputs/input-0/data}
+    outputs:
+      artifacts:
+      - {name: control-plots-data, path: /mnt/plots/pion_plots.tar.gz}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
   - name: hdf5-conversion
     container:
       args: ['cd LCIO; source setup.sh; cd .. &&                                 conda
@@ -96,6 +128,12 @@ spec:
   - name: ildeventgen-nestedgan
     dag:
       tasks:
+      - name: control-plots
+        template: control-plots
+        dependencies: [reconstruction]
+        arguments:
+          artifacts:
+          - {name: reconstruction-metadata, from: '{{tasks.reconstruction.outputs.artifacts.reconstruction-metadata}}'}
       - name: hdf5-conversion
         template: hdf5-conversion
         dependencies: [reconstruction]
