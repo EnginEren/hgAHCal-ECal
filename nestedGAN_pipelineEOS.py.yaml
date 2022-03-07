@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: ildeventgen-nestedgan-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-03-04T14:57:53.321412',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-03-07T09:57:45.245444',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
       "name": "ILDEventGen_NestedGAN"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
@@ -19,7 +19,7 @@ spec:
           controlEOS.py --lcio "$0" --h5file "$1" --nEvents 100 &&                                 cd
           /mnt/plots/ && touch pion_plots.tar.gz &&                                 tar
           --exclude=pion_plots.tar.gz -zcvf pion_plots.tar.gz .', /tmp/inputs/input-0/data,
-        /eos/user/e/eneren/run_testEOS/pion-shower_1.hdf5]
+        /tmp/inputs/input-1/data]
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
       volumeMounts:
@@ -28,6 +28,7 @@ spec:
     inputs:
       artifacts:
       - {name: reconstruction-metadata, path: /tmp/inputs/input-0/data}
+      - {name: hdf5-conversion-metadata, path: /tmp/inputs/input-1/data}
     outputs:
       artifacts:
       - {name: control-plots-data, path: /mnt/plots/pion_plots.tar.gz}
@@ -58,6 +59,9 @@ spec:
     inputs:
       artifacts:
       - {name: reconstruction-metadata, path: /tmp/inputs/input-0/data}
+    outputs:
+      artifacts:
+      - {name: hdf5-conversion-metadata, path: /mnt/hdf5_path}
     metadata:
       labels:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
@@ -86,6 +90,9 @@ spec:
     inputs:
       artifacts:
       - {name: reconstruction-2-metadata, path: /tmp/inputs/input-0/data}
+    outputs:
+      artifacts:
+      - {name: hdf5-conversion-2-metadata, path: /mnt/hdf5_path}
     metadata:
       labels:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
@@ -114,6 +121,9 @@ spec:
     inputs:
       artifacts:
       - {name: reconstruction-3-metadata, path: /tmp/inputs/input-0/data}
+    outputs:
+      artifacts:
+      - {name: hdf5-conversion-3-metadata, path: /mnt/hdf5_path}
     metadata:
       labels:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
@@ -130,9 +140,10 @@ spec:
       tasks:
       - name: control-plots
         template: control-plots
-        dependencies: [reconstruction]
+        dependencies: [hdf5-conversion, reconstruction]
         arguments:
           artifacts:
+          - {name: hdf5-conversion-metadata, from: '{{tasks.hdf5-conversion.outputs.artifacts.hdf5-conversion-metadata}}'}
           - {name: reconstruction-metadata, from: '{{tasks.reconstruction.outputs.artifacts.reconstruction-metadata}}'}
       - name: hdf5-conversion
         template: hdf5-conversion

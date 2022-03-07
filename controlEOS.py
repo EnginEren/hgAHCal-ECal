@@ -331,6 +331,9 @@ if __name__=="__main__":
 
     lcioFileReal = os.popen('cat {}'.format(lcioFile)).read()
     lcioFileReal = lcioFileReal.rstrip("\n")
+
+    h5Real = os.popen('cat {}'.format(h5File)).read()
+    h5Real = h5Real.rstrip("\n")
     
 
     record = fill_record(lcioFileReal, "EcalBarrelCollection", "HcalBarrelRegCollection", nEvents)  
@@ -341,7 +344,7 @@ if __name__=="__main__":
         plot_hits(i, record)
 
     ## some plots
-    f = h5py.File(h5File,'r')
+    f = h5py.File(h5Real,'r')
     showers = f['ecal/layers']
     hcal_showers = f['hcal/layers']
     plt_ExampleImage(showers, model_title='pionsECAL', save_title='Pions-ECAL', draw_3D=False, n=3)
