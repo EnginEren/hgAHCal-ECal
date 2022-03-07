@@ -69,7 +69,7 @@ def evaluate(lcio_file, inptH5):
                                 conda init bash; source /root/.bashrc; conda activate root_env && mkdir -p /mnt/plots && \
                                 git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal && \
                                 cp /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0 && \
-                                python controlEOS.py --lcio "$0" --h5file "$1" --nEvents 100 && \
+                                python controlEOS.py --lcio "$0" --h5file "$1" --nEvents 4000 && \
                                 cd /mnt/plots/ && touch pion_plots.tar.gz && \
                                 tar --exclude=pion_plots.tar.gz -zcvf pion_plots.tar.gz .', lcio_file, inptH5],
                     file_outputs = {
@@ -87,7 +87,7 @@ def convert_hdf5(recFile, pname, rname):
                                 conda init bash; source /root/.bashrc; conda activate root_env && \
                                 git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal && \
                                 cp /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0 \
-                                && python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents 100', recFile, rname, pname],
+                                && python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents 5000', recFile, rname, pname],
                     file_outputs={
                         'metadata': '/mnt/hdf5_path'
                     }                
@@ -104,9 +104,21 @@ def convert_hdf5(recFile, pname, rname):
 def sequential_pipeline():
     """A pipeline with sequential steps."""
     
+
+    runN = 'prod50k'
+    simBase = sim(0, runN)
+    inptLCIOb = dsl.InputArgumentPath(simBase.outputs['metadata']) 
     
-    for i in range(1,4):
-        runN = 'testEOS'
+    reconstBase = rec(inptLCIOb, 0, runN)
+    inptLCIORecb = dsl.InputArgumentPath(reconstBase.outputs['metadata'])
+    
+    hf5b = convert_hdf5(inptLCIORecb, 0, runN)
+    inptH5b = dsl.InputArgumentPath(hf5b.outputs['metadata'])
+    evaluate(inptLCIORecb, inptH5b)
+    
+    ## submit many jobs without control plots
+    for i in range(1,10):
+        runN = 'prod50k'
         simulation = sim(str(i), runN)
         simulation.execution_options.caching_strategy.max_cache_staleness = "P0D"
         inptLCIO = dsl.InputArgumentPath(simulation.outputs['metadata']) 
@@ -115,11 +127,10 @@ def sequential_pipeline():
         inptLCIORec = dsl.InputArgumentPath(reconst.outputs['metadata'])
         
         hf5 = convert_hdf5(inptLCIORec, str(i), runN)
-        inptH5 = dsl.InputArgumentPath(hf5.outputs['metadata'])
         hf5.execution_options.caching_strategy.max_cache_staleness = "P0D"
 
-        if i == 1:
-            evaluate(inptLCIORec, inptH5)
+    
+
 
     
     
