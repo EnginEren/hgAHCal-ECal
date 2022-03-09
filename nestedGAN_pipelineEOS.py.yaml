@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: ildeventgen-nestedgan-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-03-09T11:47:42.126254',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-03-09T13:17:30.657187',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
       "name": "ILDEventGen_NestedGAN"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
@@ -45,7 +45,7 @@ spec:
           &&                                 git clone https://github.com/EnginEren/hgAHCal-ECal.git
           && cd $PWD/hgAHCal-ECal &&                                 cp /secret/krb-secret-vol/krb5cc_1000
           /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0 &&                                 python
-          controlEOS.py --lcio "$0" --h5file "$1" --nEvents 4000 &&                                 cd
+          controlEOS.py --lcio "$0" --h5file "$1" --nEvents 1000 &&                                 cd
           /mnt/plots/ && touch pion_plots.tar.gz &&                                 tar
           --exclude=pion_plots.tar.gz -zcvf pion_plots.tar.gz .', /tmp/inputs/input-0/data,
         /tmp/inputs/input-1/data]

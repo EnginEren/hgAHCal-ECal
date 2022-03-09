@@ -28,7 +28,9 @@ if __name__=="__main__":
     opt = parser.parse_args()
 
     out = str(opt.output)
-    inputH5s = str(opt.input)
+    inputH5s = opt.input
+
+    print (inputH5s)
 
     
     realList = [ ]
