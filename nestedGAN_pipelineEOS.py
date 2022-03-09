@@ -95,6 +95,20 @@ def convert_hdf5(recFile, pname, rname):
     ).add_volume(eos_volume).add_volume_mount(eos_volume_mount).add_volume(krb_secret_volume).add_volume_mount(krb_secret_volume_mount)   
 
 
+def combine_hdf5(flist, output):
+    return dsl.ContainerOp(
+                    name='Combine hdf5 files',
+                    image='ilcsoft/py3lcio:lcio-16',
+                    command=[ '/bin/bash', '-c'],
+                    arguments=['cd LCIO; source setup.sh; cd .. && \
+                                conda init bash; source /root/.bashrc; conda activate root_env && \
+                                git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal && \
+                                cp /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0 \
+                                && python combineEOS.py --input $0 $1 $2 --output $3', flist[0], flist[1], flist[2] , output]            
+                
+    ).add_volume(eos_volume).add_volume_mount(eos_volume_mount).add_volume(krb_secret_volume).add_volume_mount(krb_secret_volume_mount)  
+
+
 
 @dsl.pipeline(
     name='ILDEventGen_NestedGAN',
@@ -105,7 +119,7 @@ def sequential_pipeline():
     """A pipeline with sequential steps."""
     
 
-    runN = 'prod50k'
+    runN = 'prod4k'
     simBase = sim(0, runN)
     inptLCIOb = dsl.InputArgumentPath(simBase.outputs['metadata']) 
     
@@ -117,22 +131,25 @@ def sequential_pipeline():
     evaluate(inptLCIORecb, inptH5b)
     
     ## submit many jobs without control plots
-    for i in range(1,10):
-        runN = 'prod50k'
+    
+    h5outs = []
+    for i in range(1,4):
+        runN = 'prod4k'
         simulation = sim(str(i), runN)
-        simulation.execution_options.caching_strategy.max_cache_staleness = "P0D"
+        #simulation.execution_options.caching_strategy.max_cache_staleness = "P0D"
         inptLCIO = dsl.InputArgumentPath(simulation.outputs['metadata']) 
         
         reconst = rec(inptLCIO, str(i), runN)
+        #reconst.execution_options.caching_strategy.max_cache_staleness = "P0D"
         inptLCIORec = dsl.InputArgumentPath(reconst.outputs['metadata'])
         
         hf5 = convert_hdf5(inptLCIORec, str(i), runN)
-        hf5.execution_options.caching_strategy.max_cache_staleness = "P0D"
+        a = dsl.InputArgumentPath(hf5.outputs['metadata'])
+        h5outs.append(a)
 
     
-
-
-    
+    combine_hdf5(h5outs, '/eos/user/e/eneren/run_'+runN + '/mergedData_prod5k.hdf5')
+    #print (h5outs)
     
 
 
