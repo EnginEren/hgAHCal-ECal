@@ -69,7 +69,7 @@ def evaluate(lcio_file, inptH5):
                                 conda init bash; source /root/.bashrc; conda activate root_env && mkdir -p /mnt/plots && \
                                 git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal && \
                                 cp /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0 && \
-                                python controlEOS.py --lcio "$0" --h5file "$1" --nEvents 4000 && \
+                                python controlEOS.py --lcio "$0" --h5file "$1" --nEvents 1000 && \
                                 cd /mnt/plots/ && touch pion_plots.tar.gz && \
                                 tar --exclude=pion_plots.tar.gz -zcvf pion_plots.tar.gz .', lcio_file, inptH5],
                     file_outputs = {
@@ -87,7 +87,7 @@ def convert_hdf5(recFile, pname, rname):
                                 conda init bash; source /root/.bashrc; conda activate root_env && \
                                 git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal && \
                                 cp /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0 \
-                                && python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents 5000', recFile, rname, pname],
+                                && python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents 1000', recFile, rname, pname],
                     file_outputs={
                         'metadata': '/mnt/hdf5_path'
                     }                

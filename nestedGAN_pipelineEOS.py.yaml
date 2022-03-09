@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: ildeventgen-nestedgan-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-03-09T10:32:42.180153',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-03-09T11:47:42.126254',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
       "name": "ILDEventGen_NestedGAN"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
@@ -16,14 +16,18 @@ spec:
           clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal
           &&                                 cp /secret/krb-secret-vol/krb5cc_1000
           /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0                                 &&
-          python combineEOS.py --input $0 --output $1', '[<kfp.dsl._container_op.InputArgumentPath
-          object at 0x7f2f91a9c410>, <kfp.dsl._container_op.InputArgumentPath object
-          at 0x7f2f91a2ce90>]', /eos/user/e/eneren/mergedData_prod5k.hdf5]
+          python combineEOS.py --input $0 $1 $2 --output $3', /tmp/inputs/input-0/data,
+        /tmp/inputs/input-1/data, /tmp/inputs/input-2/data, /eos/user/e/eneren/run_prod4k/mergedData_prod5k.hdf5]
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
       volumeMounts:
       - {mountPath: /eos, name: eos}
       - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    inputs:
+      artifacts:
+      - {name: hdf5-conversion-2-metadata, path: /tmp/inputs/input-0/data}
+      - {name: hdf5-conversion-3-metadata, path: /tmp/inputs/input-1/data}
+      - {name: hdf5-conversion-4-metadata, path: /tmp/inputs/input-2/data}
     metadata:
       labels:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
@@ -75,7 +79,7 @@ spec:
           &&                                 cp /secret/krb-secret-vol/krb5cc_1000
           /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0                                 &&
           python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
-          5000', /tmp/inputs/input-0/data, prod5k, '0']
+          1000', /tmp/inputs/input-0/data, prod4k, '0']
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
       volumeMounts:
@@ -105,7 +109,7 @@ spec:
           &&                                 cp /secret/krb-secret-vol/krb5cc_1000
           /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0                                 &&
           python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
-          5000', /tmp/inputs/input-0/data, prod5k, '1']
+          1000', /tmp/inputs/input-0/data, prod4k, '1']
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
       volumeMounts:
@@ -135,7 +139,7 @@ spec:
           &&                                 cp /secret/krb-secret-vol/krb5cc_1000
           /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0                                 &&
           python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
-          5000', /tmp/inputs/input-0/data, prod5k, '2']
+          1000', /tmp/inputs/input-0/data, prod4k, '2']
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
       volumeMounts:
@@ -165,7 +169,7 @@ spec:
           &&                                 cp /secret/krb-secret-vol/krb5cc_1000
           /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0                                 &&
           python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
-          5000', /tmp/inputs/input-0/data, prod5k, '3']
+          1000', /tmp/inputs/input-0/data, prod4k, '3']
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
       volumeMounts:
@@ -187,40 +191,17 @@ spec:
       name: eos
     - name: krb-secret-vol
       secret: {secretName: krb-secret}
-  - name: hdf5-conversion-5
-    container:
-      args: ['cd LCIO; source setup.sh; cd .. &&                                 conda
-          init bash; source /root/.bashrc; conda activate root_env &&                                 git
-          clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal
-          &&                                 cp /secret/krb-secret-vol/krb5cc_1000
-          /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0                                 &&
-          python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
-          5000', /tmp/inputs/input-0/data, prod5k, '4']
-      command: [/bin/bash, -c]
-      image: ilcsoft/py3lcio:lcio-16
-      volumeMounts:
-      - {mountPath: /eos, name: eos}
-      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
-    inputs:
-      artifacts:
-      - {name: reconstruction-5-metadata, path: /tmp/inputs/input-0/data}
-    outputs:
-      artifacts:
-      - {name: hdf5-conversion-5-metadata, path: /mnt/hdf5_path}
-    metadata:
-      labels:
-        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
-        pipelines.kubeflow.org/pipeline-sdk-type: kfp
-        pipelines.kubeflow.org/enable_caching: "true"
-    volumes:
-    - hostPath: {path: /var/eos}
-      name: eos
-    - name: krb-secret-vol
-      secret: {secretName: krb-secret}
   - name: ildeventgen-nestedgan
     dag:
       tasks:
-      - {name: combine-hdf5-files, template: combine-hdf5-files}
+      - name: combine-hdf5-files
+        template: combine-hdf5-files
+        dependencies: [hdf5-conversion-2, hdf5-conversion-3, hdf5-conversion-4]
+        arguments:
+          artifacts:
+          - {name: hdf5-conversion-2-metadata, from: '{{tasks.hdf5-conversion-2.outputs.artifacts.hdf5-conversion-2-metadata}}'}
+          - {name: hdf5-conversion-3-metadata, from: '{{tasks.hdf5-conversion-3.outputs.artifacts.hdf5-conversion-3-metadata}}'}
+          - {name: hdf5-conversion-4-metadata, from: '{{tasks.hdf5-conversion-4.outputs.artifacts.hdf5-conversion-4-metadata}}'}
       - name: control-plots
         template: control-plots
         dependencies: [hdf5-conversion, reconstruction]
@@ -252,12 +233,6 @@ spec:
         arguments:
           artifacts:
           - {name: reconstruction-4-metadata, from: '{{tasks.reconstruction-4.outputs.artifacts.reconstruction-4-metadata}}'}
-      - name: hdf5-conversion-5
-        template: hdf5-conversion-5
-        dependencies: [reconstruction-5]
-        arguments:
-          artifacts:
-          - {name: reconstruction-5-metadata, from: '{{tasks.reconstruction-5.outputs.artifacts.reconstruction-5-metadata}}'}
       - name: reconstruction
         template: reconstruction
         dependencies: [simulation]
@@ -282,24 +257,17 @@ spec:
         arguments:
           artifacts:
           - {name: simulation-4-metadata, from: '{{tasks.simulation-4.outputs.artifacts.simulation-4-metadata}}'}
-      - name: reconstruction-5
-        template: reconstruction-5
-        dependencies: [simulation-5]
-        arguments:
-          artifacts:
-          - {name: simulation-5-metadata, from: '{{tasks.simulation-5.outputs.artifacts.simulation-5-metadata}}'}
       - {name: simulation, template: simulation}
       - {name: simulation-2, template: simulation-2}
       - {name: simulation-3, template: simulation-3}
       - {name: simulation-4, template: simulation-4}
-      - {name: simulation-5, template: simulation-5}
   - name: reconstruction
     container:
       args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git &&                                 cd
           $PWD/hgAHCal-ECal &&                                 cp /secret/krb-secret-vol/krb5cc_1000
           /tmp/krb5cc_0 &&                                 chmod 600 /tmp/krb5cc_0
           &&                                  chmod +x ./runRec.sh && ./runRec.sh
-          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '0', prod5k]
+          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '0', prod4k]
       command: [/bin/bash, -c]
       image: ilcsoft/ilcsoft-spack:latest
       volumeMounts:
@@ -327,7 +295,7 @@ spec:
           $PWD/hgAHCal-ECal &&                                 cp /secret/krb-secret-vol/krb5cc_1000
           /tmp/krb5cc_0 &&                                 chmod 600 /tmp/krb5cc_0
           &&                                  chmod +x ./runRec.sh && ./runRec.sh
-          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '1', prod5k]
+          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '1', prod4k]
       command: [/bin/bash, -c]
       image: ilcsoft/ilcsoft-spack:latest
       volumeMounts:
@@ -355,7 +323,7 @@ spec:
           $PWD/hgAHCal-ECal &&                                 cp /secret/krb-secret-vol/krb5cc_1000
           /tmp/krb5cc_0 &&                                 chmod 600 /tmp/krb5cc_0
           &&                                  chmod +x ./runRec.sh && ./runRec.sh
-          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '2', prod5k]
+          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '2', prod4k]
       command: [/bin/bash, -c]
       image: ilcsoft/ilcsoft-spack:latest
       volumeMounts:
@@ -383,7 +351,7 @@ spec:
           $PWD/hgAHCal-ECal &&                                 cp /secret/krb-secret-vol/krb5cc_1000
           /tmp/krb5cc_0 &&                                 chmod 600 /tmp/krb5cc_0
           &&                                  chmod +x ./runRec.sh && ./runRec.sh
-          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '3', prod5k]
+          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '3', prod4k]
       command: [/bin/bash, -c]
       image: ilcsoft/ilcsoft-spack:latest
       volumeMounts:
@@ -405,41 +373,13 @@ spec:
       name: eos
     - name: krb-secret-vol
       secret: {secretName: krb-secret}
-  - name: reconstruction-5
-    container:
-      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git &&                                 cd
-          $PWD/hgAHCal-ECal &&                                 cp /secret/krb-secret-vol/krb5cc_1000
-          /tmp/krb5cc_0 &&                                 chmod 600 /tmp/krb5cc_0
-          &&                                  chmod +x ./runRec.sh && ./runRec.sh
-          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '4', prod5k]
-      command: [/bin/bash, -c]
-      image: ilcsoft/ilcsoft-spack:latest
-      volumeMounts:
-      - {mountPath: /eos, name: eos}
-      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
-    inputs:
-      artifacts:
-      - {name: simulation-5-metadata, path: /tmp/inputs/input-0/data}
-    outputs:
-      artifacts:
-      - {name: reconstruction-5-metadata, path: /mnt/lcio_rec_path}
-    metadata:
-      labels:
-        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
-        pipelines.kubeflow.org/pipeline-sdk-type: kfp
-        pipelines.kubeflow.org/enable_caching: "true"
-    volumes:
-    - hostPath: {path: /var/eos}
-      name: eos
-    - name: krb-secret-vol
-      secret: {secretName: krb-secret}
   - name: simulation
     container:
       args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git && whoami &&                                 cp
           /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 &&                                 chmod
           600 /tmp/krb5cc_0 &&                                  cd $PWD/hgAHCal-ECal
           && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh "$0" "$1" ', '0',
-        prod5k]
+        prod4k]
       command: [/bin/bash, -c]
       image: ilcsoft/ilcsoft-spack:latest
       volumeMounts:
@@ -464,7 +404,7 @@ spec:
           /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 &&                                 chmod
           600 /tmp/krb5cc_0 &&                                  cd $PWD/hgAHCal-ECal
           && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh "$0" "$1" ', '1',
-        prod5k]
+        prod4k]
       command: [/bin/bash, -c]
       image: ilcsoft/ilcsoft-spack:latest
       volumeMounts:
@@ -489,7 +429,7 @@ spec:
           /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 &&                                 chmod
           600 /tmp/krb5cc_0 &&                                  cd $PWD/hgAHCal-ECal
           && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh "$0" "$1" ', '2',
-        prod5k]
+        prod4k]
       command: [/bin/bash, -c]
       image: ilcsoft/ilcsoft-spack:latest
       volumeMounts:
@@ -514,7 +454,7 @@ spec:
           /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 &&                                 chmod
           600 /tmp/krb5cc_0 &&                                  cd $PWD/hgAHCal-ECal
           && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh "$0" "$1" ', '3',
-        prod5k]
+        prod4k]
       command: [/bin/bash, -c]
       image: ilcsoft/ilcsoft-spack:latest
       volumeMounts:
@@ -523,31 +463,6 @@ spec:
     outputs:
       artifacts:
       - {name: simulation-4-metadata, path: /mnt/lcio_path}
-    metadata:
-      labels:
-        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
-        pipelines.kubeflow.org/pipeline-sdk-type: kfp
-        pipelines.kubeflow.org/enable_caching: "true"
-    volumes:
-    - hostPath: {path: /var/eos}
-      name: eos
-    - name: krb-secret-vol
-      secret: {secretName: krb-secret}
-  - name: simulation-5
-    container:
-      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git && whoami &&                                 cp
-          /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 &&                                 chmod
-          600 /tmp/krb5cc_0 &&                                  cd $PWD/hgAHCal-ECal
-          && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh "$0" "$1" ', '4',
-        prod5k]
-      command: [/bin/bash, -c]
-      image: ilcsoft/ilcsoft-spack:latest
-      volumeMounts:
-      - {mountPath: /eos, name: eos}
-      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
-    outputs:
-      artifacts:
-      - {name: simulation-5-metadata, path: /mnt/lcio_path}
     metadata:
       labels:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
