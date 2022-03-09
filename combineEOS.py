@@ -30,7 +30,7 @@ def merge_hdf5s(inptFList, outF):
     dsetE = grp.create_dataset('energy', shape=(0, 1), maxshape=(None, 1), chunks=(100, 1), dtype='f4')
    
     hgrp = f.create_group("hcal")
-    hcal_dset = hgrp.create_dataset('layers', shape=(0, 48, 25, 25), maxshape=(None, 48, 25, 25), chunks=(100, 48, 25, 25), dtype='f8')
+    hcal_dset = hgrp.create_dataset('layers', shape=(0, 48, 30, 30), maxshape=(None, 48, 30, 30), chunks=(100, 48, 30, 30), dtype='f8')
     
 
 
