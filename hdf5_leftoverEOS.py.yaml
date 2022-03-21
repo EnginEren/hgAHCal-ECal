@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: ildeventgen-nestedgan-
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-03-21T15:39:54.503100',
+    pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
+      "name": "ILDEventGen_NestedGAN"}'}
+  labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
+spec:
+  entrypoint: ildeventgen-nestedgan
+  templates:
+  - name: combine-hdf5-files
+    container:
+      args: ['cd LCIO; source setup.sh; cd .. &&                                 conda
+          init bash; source /root/.bashrc; conda activate root_env &&                                 cp
+          /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0  &&                                 cd
+          $0 && git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal
+          &&                                 chmod +x hdf5_leftover.sh && ./hdf5_leftover.sh
+          $1', eos/user/e/eneren/run_prod50k/hdf5, ./mergedData_prod.hdf5]
+      command: [/bin/bash, -c]
+      image: ilcsoft/py3lcio:lcio-16
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
+  - name: ildeventgen-nestedgan
+    dag:
+      tasks:
+      - {name: combine-hdf5-files, template: combine-hdf5-files}
+  arguments:
+    parameters: []
+  serviceAccountName: pipeline-runner
