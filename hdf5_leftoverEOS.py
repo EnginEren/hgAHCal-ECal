@@ -37,8 +37,8 @@ def combine_hdf5(target, output):
                     arguments=['cd LCIO; source setup.sh; cd .. && \
                                 conda init bash; source /root/.bashrc; conda activate root_env && \
                                 cp /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0  && \
-                                cd $0 && git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal && \
-                                chmod +x hdf5_leftover.sh && ./hdf5_leftover.sh $1', target, output ]
+                                git clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal && \
+                                chmod +x hdf5_leftover.sh && ./hdf5_leftover.sh $0 $1', target, output ]
                                             
                 
     ).add_volume(eos_volume).add_volume_mount(eos_volume_mount).add_volume(krb_secret_volume).add_volume_mount(krb_secret_volume_mount) 
@@ -55,7 +55,7 @@ def sequential_pipeline():
     runN ='prod50k'
 
     
-    combine_hdf5('eos/user/e/eneren/run_'+ runN + '/hdf5', './mergedData_prod.hdf5')
+    combine_hdf5('/eos/user/e/eneren/run_' + runN + '/hdf5',  './mergedData_prod.hdf5')
     
     
 
