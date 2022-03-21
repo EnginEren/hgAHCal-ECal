@@ -39,7 +39,7 @@ def merge_hdf5s(inptFList, outF):
     for f_ind in range(len(f_list)):
         f_in_1 = f_list[f_ind]
         length_in_1 = length_in_list[f_ind]
-        print(f_ind)
+
         for index in np.arange(0,length_in_1,step=batchsize):
             
             ### ECAL 
@@ -51,9 +51,7 @@ def merge_hdf5s(inptFList, outF):
             
             dsetE.resize(dsetE.shape[0]+ds1E.shape[0], axis=0)
             dsetE[-1*ds1E.shape[0]:] = ds1E
-            
-            if index%1000 == 0:
-                print(index, ds1E[0])
+        
 
             ###
             ### HCAL
