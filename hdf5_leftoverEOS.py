@@ -55,7 +55,7 @@ def sequential_pipeline():
     runN ='prod50k'
 
     
-    combine_hdf5('/eos/user/e/eneren/run_' + runN + '/hdf5',  './mergedData_prod.hdf5')
+    combine_hdf5('/eos/user/e/eneren/run_' + runN + '/hdf5/',  './mergedData_prod.hdf5')
     
     
 
