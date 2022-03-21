@@ -52,10 +52,10 @@ def combine_hdf5(target, output):
 def sequential_pipeline():
     """A pipeline with sequential steps."""
 
-    runN ='prod50k'
+    runN ='prod4k'
 
     
-    combine_hdf5('/eos/user/e/eneren/run_' + runN + '/hdf5/',  './mergedData_prod.hdf5')
+    combine_hdf5('/eos/user/e/eneren/run_' + runN + '/hdf5/',  '/eos/user/e/eneren/run_' + runN + '/hdf5/mergedData_test.hdf5')
     
     
 

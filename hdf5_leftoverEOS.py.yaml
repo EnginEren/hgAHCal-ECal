@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: ildeventgen-nestedgan-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-03-21T16:51:00.098377',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-03-21T17:26:22.652344',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
       "name": "ILDEventGen_NestedGAN"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
@@ -16,7 +16,7 @@ spec:
           /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0  &&                                 git
           clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal
           &&                                 chmod +x hdf5_leftover.sh && ./hdf5_leftover.sh
-          $0 $1', /eos/user/e/eneren/run_prod50k/hdf5/, ./mergedData_prod.hdf5]
+          $0 $1', /eos/user/e/eneren/run_prod4k/hdf5/, /eos/user/e/eneren/run_prod4k/hdf5/mergedData_test.hdf5]
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
       volumeMounts:

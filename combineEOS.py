@@ -83,10 +83,6 @@ if __name__=="__main__":
     print (inputH5s)
 
     
-    #realList = [ ]
-    #for i in inputH5s:
-        #realList.append(os.popen('cat {}'.format(i)).read().rstrip("\n"))
-    #    realList.append(os.popen('cat {}'.format(i)).read())
 
     merge_hdf5s(inputH5s, out)
 
