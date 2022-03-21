@@ -1,8 +1,8 @@
 #!/bin/bash
 
-cd $1
-pwd
-f=$(ls | tr '\n' ' ')
+pwd 
+f=$(ls -d "$1"* | tr '\n' ' ')
+echo $f
 python combineEOS.py --input $f --output $2
 
 exit 0;
