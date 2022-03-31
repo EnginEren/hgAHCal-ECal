@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: ildeventgen-nestedgan-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-03-09T15:42:56.080818',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9, pipelines.kubeflow.org/pipeline_compilation_time: '2022-03-31T14:18:52.524194',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "Event Simulation and Reconstruction",
       "name": "ILDEventGen_NestedGAN"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.9}
@@ -17,7 +17,7 @@ spec:
           &&                                 cp /secret/krb-secret-vol/krb5cc_1000
           /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0                                 &&
           python combineEOS.py --input $0 $1 $2 --output $3', /tmp/inputs/input-0/data,
-        /tmp/inputs/input-1/data, /tmp/inputs/input-2/data, /eos/user/e/eneren/run_prod4k/mergedData_prod5k.hdf5]
+        /tmp/inputs/input-1/data, /tmp/inputs/input-2/data, /eos/user/e/eneren/run_prod10k_20GeV/mergedData_prod10k.hdf5]
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
       volumeMounts:
@@ -79,7 +79,7 @@ spec:
           &&                                 cp /secret/krb-secret-vol/krb5cc_1000
           /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0                                 &&
           python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
-          1000', /tmp/inputs/input-0/data, prod4k, '0']
+          1000', /tmp/inputs/input-0/data, prod10k_20GeV, '0']
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
       volumeMounts:
@@ -101,6 +101,36 @@ spec:
       name: eos
     - name: krb-secret-vol
       secret: {secretName: krb-secret}
+  - name: hdf5-conversion-10
+    container:
+      args: ['cd LCIO; source setup.sh; cd .. &&                                 conda
+          init bash; source /root/.bashrc; conda activate root_env &&                                 git
+          clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal
+          &&                                 cp /secret/krb-secret-vol/krb5cc_1000
+          /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0                                 &&
+          python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
+          1000', /tmp/inputs/input-0/data, prod10k_20GeV, '9']
+      command: [/bin/bash, -c]
+      image: ilcsoft/py3lcio:lcio-16
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    inputs:
+      artifacts:
+      - {name: reconstruction-10-metadata, path: /tmp/inputs/input-0/data}
+    outputs:
+      artifacts:
+      - {name: hdf5-conversion-10-metadata, path: /mnt/hdf5_path}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
   - name: hdf5-conversion-2
     container:
       args: ['cd LCIO; source setup.sh; cd .. &&                                 conda
@@ -109,7 +139,7 @@ spec:
           &&                                 cp /secret/krb-secret-vol/krb5cc_1000
           /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0                                 &&
           python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
-          1000', /tmp/inputs/input-0/data, prod4k, '1']
+          1000', /tmp/inputs/input-0/data, prod10k_20GeV, '1']
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
       volumeMounts:
@@ -139,7 +169,7 @@ spec:
           &&                                 cp /secret/krb-secret-vol/krb5cc_1000
           /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0                                 &&
           python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
-          1000', /tmp/inputs/input-0/data, prod4k, '2']
+          1000', /tmp/inputs/input-0/data, prod10k_20GeV, '2']
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
       volumeMounts:
@@ -169,7 +199,7 @@ spec:
           &&                                 cp /secret/krb-secret-vol/krb5cc_1000
           /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0                                 &&
           python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
-          1000', /tmp/inputs/input-0/data, prod4k, '3']
+          1000', /tmp/inputs/input-0/data, prod10k_20GeV, '3']
       command: [/bin/bash, -c]
       image: ilcsoft/py3lcio:lcio-16
       volumeMounts:
@@ -181,6 +211,156 @@ spec:
     outputs:
       artifacts:
       - {name: hdf5-conversion-4-metadata, path: /mnt/hdf5_path}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
+  - name: hdf5-conversion-5
+    container:
+      args: ['cd LCIO; source setup.sh; cd .. &&                                 conda
+          init bash; source /root/.bashrc; conda activate root_env &&                                 git
+          clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal
+          &&                                 cp /secret/krb-secret-vol/krb5cc_1000
+          /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0                                 &&
+          python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
+          1000', /tmp/inputs/input-0/data, prod10k_20GeV, '4']
+      command: [/bin/bash, -c]
+      image: ilcsoft/py3lcio:lcio-16
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    inputs:
+      artifacts:
+      - {name: reconstruction-5-metadata, path: /tmp/inputs/input-0/data}
+    outputs:
+      artifacts:
+      - {name: hdf5-conversion-5-metadata, path: /mnt/hdf5_path}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
+  - name: hdf5-conversion-6
+    container:
+      args: ['cd LCIO; source setup.sh; cd .. &&                                 conda
+          init bash; source /root/.bashrc; conda activate root_env &&                                 git
+          clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal
+          &&                                 cp /secret/krb-secret-vol/krb5cc_1000
+          /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0                                 &&
+          python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
+          1000', /tmp/inputs/input-0/data, prod10k_20GeV, '5']
+      command: [/bin/bash, -c]
+      image: ilcsoft/py3lcio:lcio-16
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    inputs:
+      artifacts:
+      - {name: reconstruction-6-metadata, path: /tmp/inputs/input-0/data}
+    outputs:
+      artifacts:
+      - {name: hdf5-conversion-6-metadata, path: /mnt/hdf5_path}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
+  - name: hdf5-conversion-7
+    container:
+      args: ['cd LCIO; source setup.sh; cd .. &&                                 conda
+          init bash; source /root/.bashrc; conda activate root_env &&                                 git
+          clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal
+          &&                                 cp /secret/krb-secret-vol/krb5cc_1000
+          /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0                                 &&
+          python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
+          1000', /tmp/inputs/input-0/data, prod10k_20GeV, '6']
+      command: [/bin/bash, -c]
+      image: ilcsoft/py3lcio:lcio-16
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    inputs:
+      artifacts:
+      - {name: reconstruction-7-metadata, path: /tmp/inputs/input-0/data}
+    outputs:
+      artifacts:
+      - {name: hdf5-conversion-7-metadata, path: /mnt/hdf5_path}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
+  - name: hdf5-conversion-8
+    container:
+      args: ['cd LCIO; source setup.sh; cd .. &&                                 conda
+          init bash; source /root/.bashrc; conda activate root_env &&                                 git
+          clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal
+          &&                                 cp /secret/krb-secret-vol/krb5cc_1000
+          /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0                                 &&
+          python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
+          1000', /tmp/inputs/input-0/data, prod10k_20GeV, '7']
+      command: [/bin/bash, -c]
+      image: ilcsoft/py3lcio:lcio-16
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    inputs:
+      artifacts:
+      - {name: reconstruction-8-metadata, path: /tmp/inputs/input-0/data}
+    outputs:
+      artifacts:
+      - {name: hdf5-conversion-8-metadata, path: /mnt/hdf5_path}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
+  - name: hdf5-conversion-9
+    container:
+      args: ['cd LCIO; source setup.sh; cd .. &&                                 conda
+          init bash; source /root/.bashrc; conda activate root_env &&                                 git
+          clone https://github.com/EnginEren/hgAHCal-ECal.git && cd $PWD/hgAHCal-ECal
+          &&                                 cp /secret/krb-secret-vol/krb5cc_1000
+          /tmp/krb5cc_0 && chmod 600 /tmp/krb5cc_0                                 &&
+          python create_hdf5EOS.py --lcio "$0" --outputR "$1" --outputP "$2" --nEvents
+          1000', /tmp/inputs/input-0/data, prod10k_20GeV, '8']
+      command: [/bin/bash, -c]
+      image: ilcsoft/py3lcio:lcio-16
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    inputs:
+      artifacts:
+      - {name: reconstruction-9-metadata, path: /tmp/inputs/input-0/data}
+    outputs:
+      artifacts:
+      - {name: hdf5-conversion-9-metadata, path: /mnt/hdf5_path}
     metadata:
       labels:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
@@ -215,6 +395,12 @@ spec:
         arguments:
           artifacts:
           - {name: reconstruction-metadata, from: '{{tasks.reconstruction.outputs.artifacts.reconstruction-metadata}}'}
+      - name: hdf5-conversion-10
+        template: hdf5-conversion-10
+        dependencies: [reconstruction-10]
+        arguments:
+          artifacts:
+          - {name: reconstruction-10-metadata, from: '{{tasks.reconstruction-10.outputs.artifacts.reconstruction-10-metadata}}'}
       - name: hdf5-conversion-2
         template: hdf5-conversion-2
         dependencies: [reconstruction-2]
@@ -233,12 +419,48 @@ spec:
         arguments:
           artifacts:
           - {name: reconstruction-4-metadata, from: '{{tasks.reconstruction-4.outputs.artifacts.reconstruction-4-metadata}}'}
+      - name: hdf5-conversion-5
+        template: hdf5-conversion-5
+        dependencies: [reconstruction-5]
+        arguments:
+          artifacts:
+          - {name: reconstruction-5-metadata, from: '{{tasks.reconstruction-5.outputs.artifacts.reconstruction-5-metadata}}'}
+      - name: hdf5-conversion-6
+        template: hdf5-conversion-6
+        dependencies: [reconstruction-6]
+        arguments:
+          artifacts:
+          - {name: reconstruction-6-metadata, from: '{{tasks.reconstruction-6.outputs.artifacts.reconstruction-6-metadata}}'}
+      - name: hdf5-conversion-7
+        template: hdf5-conversion-7
+        dependencies: [reconstruction-7]
+        arguments:
+          artifacts:
+          - {name: reconstruction-7-metadata, from: '{{tasks.reconstruction-7.outputs.artifacts.reconstruction-7-metadata}}'}
+      - name: hdf5-conversion-8
+        template: hdf5-conversion-8
+        dependencies: [reconstruction-8]
+        arguments:
+          artifacts:
+          - {name: reconstruction-8-metadata, from: '{{tasks.reconstruction-8.outputs.artifacts.reconstruction-8-metadata}}'}
+      - name: hdf5-conversion-9
+        template: hdf5-conversion-9
+        dependencies: [reconstruction-9]
+        arguments:
+          artifacts:
+          - {name: reconstruction-9-metadata, from: '{{tasks.reconstruction-9.outputs.artifacts.reconstruction-9-metadata}}'}
       - name: reconstruction
         template: reconstruction
         dependencies: [simulation]
         arguments:
           artifacts:
           - {name: simulation-metadata, from: '{{tasks.simulation.outputs.artifacts.simulation-metadata}}'}
+      - name: reconstruction-10
+        template: reconstruction-10
+        dependencies: [simulation-10]
+        arguments:
+          artifacts:
+          - {name: simulation-10-metadata, from: '{{tasks.simulation-10.outputs.artifacts.simulation-10-metadata}}'}
       - name: reconstruction-2
         template: reconstruction-2
         dependencies: [simulation-2]
@@ -257,17 +479,53 @@ spec:
         arguments:
           artifacts:
           - {name: simulation-4-metadata, from: '{{tasks.simulation-4.outputs.artifacts.simulation-4-metadata}}'}
+      - name: reconstruction-5
+        template: reconstruction-5
+        dependencies: [simulation-5]
+        arguments:
+          artifacts:
+          - {name: simulation-5-metadata, from: '{{tasks.simulation-5.outputs.artifacts.simulation-5-metadata}}'}
+      - name: reconstruction-6
+        template: reconstruction-6
+        dependencies: [simulation-6]
+        arguments:
+          artifacts:
+          - {name: simulation-6-metadata, from: '{{tasks.simulation-6.outputs.artifacts.simulation-6-metadata}}'}
+      - name: reconstruction-7
+        template: reconstruction-7
+        dependencies: [simulation-7]
+        arguments:
+          artifacts:
+          - {name: simulation-7-metadata, from: '{{tasks.simulation-7.outputs.artifacts.simulation-7-metadata}}'}
+      - name: reconstruction-8
+        template: reconstruction-8
+        dependencies: [simulation-8]
+        arguments:
+          artifacts:
+          - {name: simulation-8-metadata, from: '{{tasks.simulation-8.outputs.artifacts.simulation-8-metadata}}'}
+      - name: reconstruction-9
+        template: reconstruction-9
+        dependencies: [simulation-9]
+        arguments:
+          artifacts:
+          - {name: simulation-9-metadata, from: '{{tasks.simulation-9.outputs.artifacts.simulation-9-metadata}}'}
       - {name: simulation, template: simulation}
+      - {name: simulation-10, template: simulation-10}
       - {name: simulation-2, template: simulation-2}
       - {name: simulation-3, template: simulation-3}
       - {name: simulation-4, template: simulation-4}
+      - {name: simulation-5, template: simulation-5}
+      - {name: simulation-6, template: simulation-6}
+      - {name: simulation-7, template: simulation-7}
+      - {name: simulation-8, template: simulation-8}
+      - {name: simulation-9, template: simulation-9}
   - name: reconstruction
     container:
       args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git &&                                 cd
           $PWD/hgAHCal-ECal &&                                 cp /secret/krb-secret-vol/krb5cc_1000
           /tmp/krb5cc_0 &&                                 chmod 600 /tmp/krb5cc_0
           &&                                  chmod +x ./runRec.sh && ./runRec.sh
-          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '0', prod4k]
+          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '0', prod10k_20GeV]
       command: [/bin/bash, -c]
       image: ilcsoft/ilcsoft-spack:latest
       volumeMounts:
@@ -289,13 +547,41 @@ spec:
       name: eos
     - name: krb-secret-vol
       secret: {secretName: krb-secret}
+  - name: reconstruction-10
+    container:
+      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git &&                                 cd
+          $PWD/hgAHCal-ECal &&                                 cp /secret/krb-secret-vol/krb5cc_1000
+          /tmp/krb5cc_0 &&                                 chmod 600 /tmp/krb5cc_0
+          &&                                  chmod +x ./runRec.sh && ./runRec.sh
+          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '9', prod10k_20GeV]
+      command: [/bin/bash, -c]
+      image: ilcsoft/ilcsoft-spack:latest
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    inputs:
+      artifacts:
+      - {name: simulation-10-metadata, path: /tmp/inputs/input-0/data}
+    outputs:
+      artifacts:
+      - {name: reconstruction-10-metadata, path: /mnt/lcio_rec_path}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
   - name: reconstruction-2
     container:
       args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git &&                                 cd
           $PWD/hgAHCal-ECal &&                                 cp /secret/krb-secret-vol/krb5cc_1000
           /tmp/krb5cc_0 &&                                 chmod 600 /tmp/krb5cc_0
           &&                                  chmod +x ./runRec.sh && ./runRec.sh
-          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '1', prod4k]
+          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '1', prod10k_20GeV]
       command: [/bin/bash, -c]
       image: ilcsoft/ilcsoft-spack:latest
       volumeMounts:
@@ -323,7 +609,7 @@ spec:
           $PWD/hgAHCal-ECal &&                                 cp /secret/krb-secret-vol/krb5cc_1000
           /tmp/krb5cc_0 &&                                 chmod 600 /tmp/krb5cc_0
           &&                                  chmod +x ./runRec.sh && ./runRec.sh
-          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '2', prod4k]
+          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '2', prod10k_20GeV]
       command: [/bin/bash, -c]
       image: ilcsoft/ilcsoft-spack:latest
       volumeMounts:
@@ -351,7 +637,7 @@ spec:
           $PWD/hgAHCal-ECal &&                                 cp /secret/krb-secret-vol/krb5cc_1000
           /tmp/krb5cc_0 &&                                 chmod 600 /tmp/krb5cc_0
           &&                                  chmod +x ./runRec.sh && ./runRec.sh
-          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '3', prod4k]
+          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '3', prod10k_20GeV]
       command: [/bin/bash, -c]
       image: ilcsoft/ilcsoft-spack:latest
       volumeMounts:
@@ -373,13 +659,153 @@ spec:
       name: eos
     - name: krb-secret-vol
       secret: {secretName: krb-secret}
+  - name: reconstruction-5
+    container:
+      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git &&                                 cd
+          $PWD/hgAHCal-ECal &&                                 cp /secret/krb-secret-vol/krb5cc_1000
+          /tmp/krb5cc_0 &&                                 chmod 600 /tmp/krb5cc_0
+          &&                                  chmod +x ./runRec.sh && ./runRec.sh
+          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '4', prod10k_20GeV]
+      command: [/bin/bash, -c]
+      image: ilcsoft/ilcsoft-spack:latest
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    inputs:
+      artifacts:
+      - {name: simulation-5-metadata, path: /tmp/inputs/input-0/data}
+    outputs:
+      artifacts:
+      - {name: reconstruction-5-metadata, path: /mnt/lcio_rec_path}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
+  - name: reconstruction-6
+    container:
+      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git &&                                 cd
+          $PWD/hgAHCal-ECal &&                                 cp /secret/krb-secret-vol/krb5cc_1000
+          /tmp/krb5cc_0 &&                                 chmod 600 /tmp/krb5cc_0
+          &&                                  chmod +x ./runRec.sh && ./runRec.sh
+          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '5', prod10k_20GeV]
+      command: [/bin/bash, -c]
+      image: ilcsoft/ilcsoft-spack:latest
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    inputs:
+      artifacts:
+      - {name: simulation-6-metadata, path: /tmp/inputs/input-0/data}
+    outputs:
+      artifacts:
+      - {name: reconstruction-6-metadata, path: /mnt/lcio_rec_path}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
+  - name: reconstruction-7
+    container:
+      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git &&                                 cd
+          $PWD/hgAHCal-ECal &&                                 cp /secret/krb-secret-vol/krb5cc_1000
+          /tmp/krb5cc_0 &&                                 chmod 600 /tmp/krb5cc_0
+          &&                                  chmod +x ./runRec.sh && ./runRec.sh
+          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '6', prod10k_20GeV]
+      command: [/bin/bash, -c]
+      image: ilcsoft/ilcsoft-spack:latest
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    inputs:
+      artifacts:
+      - {name: simulation-7-metadata, path: /tmp/inputs/input-0/data}
+    outputs:
+      artifacts:
+      - {name: reconstruction-7-metadata, path: /mnt/lcio_rec_path}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
+  - name: reconstruction-8
+    container:
+      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git &&                                 cd
+          $PWD/hgAHCal-ECal &&                                 cp /secret/krb-secret-vol/krb5cc_1000
+          /tmp/krb5cc_0 &&                                 chmod 600 /tmp/krb5cc_0
+          &&                                  chmod +x ./runRec.sh && ./runRec.sh
+          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '7', prod10k_20GeV]
+      command: [/bin/bash, -c]
+      image: ilcsoft/ilcsoft-spack:latest
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    inputs:
+      artifacts:
+      - {name: simulation-8-metadata, path: /tmp/inputs/input-0/data}
+    outputs:
+      artifacts:
+      - {name: reconstruction-8-metadata, path: /mnt/lcio_rec_path}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
+  - name: reconstruction-9
+    container:
+      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git &&                                 cd
+          $PWD/hgAHCal-ECal &&                                 cp /secret/krb-secret-vol/krb5cc_1000
+          /tmp/krb5cc_0 &&                                 chmod 600 /tmp/krb5cc_0
+          &&                                  chmod +x ./runRec.sh && ./runRec.sh
+          "$0" "$1" "$2" ', /tmp/inputs/input-0/data, '8', prod10k_20GeV]
+      command: [/bin/bash, -c]
+      image: ilcsoft/ilcsoft-spack:latest
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    inputs:
+      artifacts:
+      - {name: simulation-9-metadata, path: /tmp/inputs/input-0/data}
+    outputs:
+      artifacts:
+      - {name: reconstruction-9-metadata, path: /mnt/lcio_rec_path}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
   - name: simulation
     container:
       args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git && whoami &&                                 cp
           /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 &&                                 chmod
           600 /tmp/krb5cc_0 &&                                  cd $PWD/hgAHCal-ECal
           && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh "$0" "$1" ', '0',
-        prod4k]
+        prod10k_20GeV]
       command: [/bin/bash, -c]
       image: ilcsoft/ilcsoft-spack:latest
       volumeMounts:
@@ -398,13 +824,38 @@ spec:
       name: eos
     - name: krb-secret-vol
       secret: {secretName: krb-secret}
+  - name: simulation-10
+    container:
+      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git && whoami &&                                 cp
+          /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 &&                                 chmod
+          600 /tmp/krb5cc_0 &&                                  cd $PWD/hgAHCal-ECal
+          && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh "$0" "$1" ', '9',
+        prod10k_20GeV]
+      command: [/bin/bash, -c]
+      image: ilcsoft/ilcsoft-spack:latest
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    outputs:
+      artifacts:
+      - {name: simulation-10-metadata, path: /mnt/lcio_path}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
   - name: simulation-2
     container:
       args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git && whoami &&                                 cp
           /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 &&                                 chmod
           600 /tmp/krb5cc_0 &&                                  cd $PWD/hgAHCal-ECal
           && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh "$0" "$1" ', '1',
-        prod4k]
+        prod10k_20GeV]
       command: [/bin/bash, -c]
       image: ilcsoft/ilcsoft-spack:latest
       volumeMounts:
@@ -429,7 +880,7 @@ spec:
           /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 &&                                 chmod
           600 /tmp/krb5cc_0 &&                                  cd $PWD/hgAHCal-ECal
           && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh "$0" "$1" ', '2',
-        prod4k]
+        prod10k_20GeV]
       command: [/bin/bash, -c]
       image: ilcsoft/ilcsoft-spack:latest
       volumeMounts:
@@ -454,7 +905,7 @@ spec:
           /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 &&                                 chmod
           600 /tmp/krb5cc_0 &&                                  cd $PWD/hgAHCal-ECal
           && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh "$0" "$1" ', '3',
-        prod4k]
+        prod10k_20GeV]
       command: [/bin/bash, -c]
       image: ilcsoft/ilcsoft-spack:latest
       volumeMounts:
@@ -463,6 +914,131 @@ spec:
     outputs:
       artifacts:
       - {name: simulation-4-metadata, path: /mnt/lcio_path}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
+  - name: simulation-5
+    container:
+      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git && whoami &&                                 cp
+          /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 &&                                 chmod
+          600 /tmp/krb5cc_0 &&                                  cd $PWD/hgAHCal-ECal
+          && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh "$0" "$1" ', '4',
+        prod10k_20GeV]
+      command: [/bin/bash, -c]
+      image: ilcsoft/ilcsoft-spack:latest
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    outputs:
+      artifacts:
+      - {name: simulation-5-metadata, path: /mnt/lcio_path}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
+  - name: simulation-6
+    container:
+      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git && whoami &&                                 cp
+          /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 &&                                 chmod
+          600 /tmp/krb5cc_0 &&                                  cd $PWD/hgAHCal-ECal
+          && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh "$0" "$1" ', '5',
+        prod10k_20GeV]
+      command: [/bin/bash, -c]
+      image: ilcsoft/ilcsoft-spack:latest
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    outputs:
+      artifacts:
+      - {name: simulation-6-metadata, path: /mnt/lcio_path}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
+  - name: simulation-7
+    container:
+      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git && whoami &&                                 cp
+          /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 &&                                 chmod
+          600 /tmp/krb5cc_0 &&                                  cd $PWD/hgAHCal-ECal
+          && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh "$0" "$1" ', '6',
+        prod10k_20GeV]
+      command: [/bin/bash, -c]
+      image: ilcsoft/ilcsoft-spack:latest
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    outputs:
+      artifacts:
+      - {name: simulation-7-metadata, path: /mnt/lcio_path}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
+  - name: simulation-8
+    container:
+      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git && whoami &&                                 cp
+          /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 &&                                 chmod
+          600 /tmp/krb5cc_0 &&                                  cd $PWD/hgAHCal-ECal
+          && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh "$0" "$1" ', '7',
+        prod10k_20GeV]
+      command: [/bin/bash, -c]
+      image: ilcsoft/ilcsoft-spack:latest
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    outputs:
+      artifacts:
+      - {name: simulation-8-metadata, path: /mnt/lcio_path}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.9
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+    volumes:
+    - hostPath: {path: /var/eos}
+      name: eos
+    - name: krb-secret-vol
+      secret: {secretName: krb-secret}
+  - name: simulation-9
+    container:
+      args: ['git clone https://github.com/EnginEren/hgAHCal-ECal.git && whoami &&                                 cp
+          /secret/krb-secret-vol/krb5cc_1000 /tmp/krb5cc_0 &&                                 chmod
+          600 /tmp/krb5cc_0 &&                                  cd $PWD/hgAHCal-ECal
+          && chmod +x ./runSimNestedEOS.sh && ./runSimNestedEOS.sh "$0" "$1" ', '8',
+        prod10k_20GeV]
+      command: [/bin/bash, -c]
+      image: ilcsoft/ilcsoft-spack:latest
+      volumeMounts:
+      - {mountPath: /eos, name: eos}
+      - {mountPath: /secret/krb-secret-vol, name: krb-secret-vol}
+    outputs:
+      artifacts:
+      - {name: simulation-9-metadata, path: /mnt/lcio_path}
     metadata:
       labels:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.9

@@ -119,7 +119,7 @@ def sequential_pipeline():
     """A pipeline with sequential steps."""
     
 
-    runN = 'prod4k'
+    runN = 'prod10k_20GeV'
     simBase = sim(0, runN)
     inptLCIOb = dsl.InputArgumentPath(simBase.outputs['metadata']) 
     
@@ -133,8 +133,8 @@ def sequential_pipeline():
     ## submit many jobs without control plots
     
     h5outs = []
-    for i in range(1,4):
-        runN = 'prod4k'
+    for i in range(1,10):
+        runN = 'prod10k_20GeV'
         simulation = sim(str(i), runN)
         #simulation.execution_options.caching_strategy.max_cache_staleness = "P0D"
         inptLCIO = dsl.InputArgumentPath(simulation.outputs['metadata']) 
@@ -148,7 +148,7 @@ def sequential_pipeline():
         h5outs.append(a)
 
     
-    combine_hdf5(h5outs, '/eos/user/e/eneren/run_'+runN + '/mergedData_prod5k.hdf5')
+    combine_hdf5(h5outs, '/eos/user/e/eneren/run_'+runN + '/mergedData_prod10k.hdf5')
     #print (h5outs)
     
 
